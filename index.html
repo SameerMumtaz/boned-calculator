@@ -4567,15 +4567,59 @@
   // ================================
   
   // Credit score tiers and typical APR ranges
+  // Granular credit score APR suggestions (Feb 2026 market rates - 50pt increments)
+  const CREDIT_APR_MAP = {
+    850: 5.49,  // Exceptional - best available rates
+    800: 5.74,
+    750: 6.24,  // Excellent
+    700: 6.99,  // Good
+    650: 8.49,  // Fair
+    600: 10.99, // Fair/Poor boundary
+    550: 13.99, // Poor
+    500: 16.99  // Very Poor - subprime
+  };
+  
+  function suggestAPRFromCredit(score) {
+    if (!score || score < 500 || score > 850) return null;
+    
+    // Clamp to valid range
+    score = Math.max(500, Math.min(850, score));
+    
+    // Find the two nearest breakpoints
+    const breakpoints = Object.keys(CREDIT_APR_MAP).map(Number).sort((a, b) => b - a);
+    
+    let upper = breakpoints.find(bp => score >= bp);
+    let lower = breakpoints.find(bp => score < bp);
+    
+    // If exact match
+    if (CREDIT_APR_MAP[score]) return CREDIT_APR_MAP[score];
+    
+    // If above highest breakpoint
+    if (!lower) return CREDIT_APR_MAP[upper];
+    
+    // If below lowest breakpoint  
+    if (!upper) return CREDIT_APR_MAP[lower];
+    
+    // Linear interpolation between breakpoints
+    const upperAPR = CREDIT_APR_MAP[upper];
+    const lowerAPR = CREDIT_APR_MAP[lower];
+    const ratio = (score - upper) / (lower - upper);
+    const interpolatedAPR = upperAPR + (lowerAPR - upperAPR) * ratio;
+    
+    return Math.round(interpolatedAPR * 100) / 100; // Round to 2 decimals
+  }
+  
+  // Legacy tier system for color coding only
   const CREDIT_TIERS = {
-    excellent: { min: 740, max: 850, aprMin: 3.5, aprMax: 5.5, color: "#10b981", label: "Excellent" },
-    good: { min: 670, max: 739, aprMin: 5.5, aprMax: 7.5, color: "#6495ED", label: "Good" },
-    fair: { min: 580, max: 669, aprMin: 7.5, aprMax: 12, color: "#f59e0b", label: "Fair" },
-    poor: { min: 300, max: 579, aprMin: 12, aprMax: 18, color: "#ef4444", label: "Poor" }
+    exceptional: { min: 800, max: 850, color: "#10b981", label: "Exceptional" },
+    excellent: { min: 740, max: 799, color: "#22c55e", label: "Excellent" },
+    good: { min: 670, max: 739, color: "#6495ED", label: "Good" },
+    fair: { min: 580, max: 669, color: "#f59e0b", label: "Fair" },
+    poor: { min: 500, max: 579, color: "#ef4444", label: "Poor" }
   };
   
   function getCreditTier(score) {
-    if (!score || score < 300 || score > 850) return null;
+    if (!score || score < 500 || score > 850) return null;
     
     for (const [key, tier] of Object.entries(CREDIT_TIERS)) {
       if (score >= tier.min && score <= tier.max) {
@@ -4585,41 +4629,39 @@
     return null;
   }
   
-  function suggestAPRFromCredit(score) {
-    const tier = getCreditTier(score);
-    if (!tier) return null;
-    
-    // Return mid-point of range
-    return (tier.aprMin + tier.aprMax) / 2;
-  }
-  
   function updateCreditTierDisplay() {
     const score = parseInt(document.getElementById("creditScore").value);
     const tierText = document.getElementById("creditTierText");
     const aprInput = document.getElementById("apr");
     
-    if (!score || score < 300 || score > 850) {
-      tierText.textContent = "Private - used for rate estimates only";
+    if (!score || score < 500 || score > 850) {
+      tierText.textContent = "Enter score 500-850 for rate estimate";
       tierText.style.color = "#94a3b8";
       return;
     }
     
     const tier = getCreditTier(score);
-    if (tier) {
-      tierText.innerHTML = `<strong style="color: ${tier.color};">${tier.label}</strong> • Est. APR: ${tier.aprMin}% - ${tier.aprMax}%`;
+    const suggestedAPR = suggestAPRFromCredit(score);
+    
+    if (tier && suggestedAPR) {
+      tierText.innerHTML = `<strong style="color: ${tier.color};">${tier.label}</strong> • Est. APR: ${suggestedAPR.toFixed(2)}%`;
       tierText.style.color = tier.color;
       
-      // Auto-suggest APR (mid-point of range)
-      const suggestedAPR = suggestAPRFromCredit(score);
-      if (suggestedAPR && (!aprInput.value || confirm(`Update APR to ${suggestedAPR.toFixed(2)}% based on your credit score?`))) {
+      // Auto-suggest APR with confirmation
+      if (!aprInput.value || aprInput.value == 0) {
         aprInput.value = suggestedAPR.toFixed(2);
+      } else if (Math.abs(aprInput.value - suggestedAPR) > 1) {
+        // Only prompt if difference is significant
+        if (confirm(`Based on your ${score} credit score, typical APR is ${suggestedAPR.toFixed(2)}%. Update?`)) {
+          aprInput.value = suggestedAPR.toFixed(2);
+        }
       }
     }
   }
   
   function calculateCreditImpact() {
     const currentScore = parseInt(document.getElementById("creditScore").value);
-    if (!currentScore || currentScore < 300 || currentScore > 850) return null;
+    if (!currentScore || currentScore < 500 || currentScore > 850) return null;
     
     const currentAPR = readNumber("apr");
     const principal = readNumber("price") - readNumber("down");
@@ -4627,8 +4669,8 @@
     
     if (!principal || !term) return null;
     
-    // Calculate with better credit (760)
-    const betterScore = 760;
+    // Calculate with excellent credit (780)
+    const betterScore = 780;
     const betterAPR = suggestAPRFromCredit(betterScore);
     const currentMonthly = monthlyPayment(principal, currentAPR, term);
     const betterMonthly = monthlyPayment(principal, betterAPR, term);
