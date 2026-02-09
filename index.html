@@ -1491,7 +1491,7 @@
           <option value="2016">2016</option>
           <option value="2015">2015</option>
         </select>
-        <div class="muted">Pricing based on 2026 MSRP data</div>
+        <div class="muted">New: MSRP | Used: Depreciated value + market premium</div>
       </div>
       <div class="col-3">
         <label>Make</label>
@@ -1540,7 +1540,7 @@
         <select id="trim">
           <option value="">Select Model First...</option>
         </select>
-        <div class="muted">Purchase Price auto-fills based on year, model & trim</div>
+        <div class="muted">Auto-calculated using depreciation model + 7% market premium</div>
       </div>
       <div class="col-3">
         <label>Current Odometer (miles)</label>
@@ -2943,21 +2943,56 @@
     },
   };
   // Year-based depreciation multipliers for estimating older model prices
-  const YEAR_PRICE_MULTIPLIERS = {
-    2027: 1.03, // Future model year (estimated)
-    2026: 1.00, // Current baseline
-    2025: 0.95,
-    2024: 0.88,
-    2023: 0.79,
-    2022: 0.71,
-    2021: 0.65,
-    2020: 0.59,
-    2019: 0.53,
-    2018: 0.48,
-    2017: 0.45,
-    2016: 0.41,
-    2015: 0.38
+  // Market premium range for used vehicles (dealer markup, condition, etc.)
+  const MARKET_PREMIUM = {
+    min: 1.05,  // 5% over depreciated value (good deal)
+    avg: 1.07,  // 7% over depreciated value (typical)
+    max: 1.10   // 10% over depreciated value (dealer premium)
   };
+
+  // Calculate realistic purchase price based on year and vehicle characteristics
+  function calculateSuggestedPrice(year, make, model, trimMsrp) {
+    const currentYear = 2026;
+    const age = currentYear - year;
+    
+    // New vehicles (current year): Use MSRP
+    if (age === 0) {
+      return trimMsrp;
+    }
+    
+    // Future year (2027): Add premium for next model year
+    if (age < 0) {
+      return Math.round(trimMsrp * 1.03); // 3% premium
+    }
+    
+    // Used vehicles: Use depreciation model + market premium
+    const segment = getModelSegment(make, model);
+    const segmentCurve = getSegmentCurve(segment);
+    const brandMod = getBrandModifier(make);
+    const modelMod = getModelOverride(make, model);
+    const combinedMod = brandMod * modelMod;
+    
+    // Get residual value at this age
+    let residual;
+    if (age < segmentCurve.length) {
+      residual = segmentCurve[age] * combinedMod;
+      residual = clamp(residual, 0.10, 1.00);
+    } else {
+      // Older than curve data, use last value with continued decay
+      residual = segmentCurve[segmentCurve.length - 1] * combinedMod;
+      const yearsOver = age - (segmentCurve.length - 1);
+      residual = residual * Math.pow(0.92, yearsOver); // 8% annual decay
+      residual = clamp(residual, 0.05, 1.00);
+    }
+    
+    // Base depreciated value
+    const depreciatedValue = trimMsrp * residual;
+    
+    // Add market premium (use average 7%)
+    const marketPrice = depreciatedValue * MARKET_PREMIUM.avg;
+    
+    return Math.round(marketPrice);
+  }
 
   // ================================
   // DEPRECIATION CURVES
@@ -4545,10 +4580,13 @@
     const selectedOption = this.options[this.selectedIndex];
     if (selectedOption && selectedOption.dataset.msrp) {
       const year = readNumber("year");
+      const make = readText("make");
+      const model = readText("model");
       const msrp = parseInt(selectedOption.dataset.msrp);
-      const multiplier = YEAR_PRICE_MULTIPLIERS[year] || 1.0;
-      const adjustedPrice = Math.round(msrp * multiplier);
-      document.getElementById("price").value = adjustedPrice;
+      
+      // Use smart depreciation-based pricing
+      const suggestedPrice = calculateSuggestedPrice(year, make, model, msrp);
+      document.getElementById("price").value = suggestedPrice;
     }
   });
 
