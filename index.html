@@ -1894,6 +1894,22 @@
         ➕ Add Vehicle to Compare
       </button>
       
+      <!-- Comparison Charts (shows when 2+ vehicles) -->
+      <div id="comparisonChartsSection" style="display: none; margin-bottom: 30px;">
+        <div style="background: #0d192f; border: 1px solid #1e3a5f30; border-radius: 14px; padding: 24px; margin-bottom: 20px;">
+          <h3 style="margin: 0 0 20px; font-size: 18px; font-weight: 700;">📊 Value Over Time</h3>
+          <div style="height: 250px; position: relative;">
+            <canvas id="valueComparisonChart"></canvas>
+          </div>
+        </div>
+        <div style="background: #0d192f; border: 1px solid #1e3a5f30; border-radius: 14px; padding: 24px;">
+          <h3 style="margin: 0 0 20px; font-size: 18px; font-weight: 700;">💰 Net Cost Comparison</h3>
+          <div style="height: 200px; position: relative;">
+            <canvas id="costComparisonChart"></canvas>
+          </div>
+        </div>
+      </div>
+      
       <div id="vehicleComparisonGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px;"></div>
       
       <div id="noVehiclesMessage" style="text-align: center; padding: 60px 20px; color: #64748b;">
@@ -4285,8 +4301,13 @@
     grid.innerHTML = '';
 
     // Calculate results for each vehicle (finance or lease)
-    const results = comparisonVehicles.map(v => {
-      if (v.type === 'lease') {
+    const results = comparisonVehicles.map((v, index) => {
+      // Sync financing: use first vehicle's financing terms for all
+      const vehicleToUse = (syncFinancing && index > 0 && v.type !== 'lease' && comparisonVehicles[0].type !== 'lease') 
+        ? { ...v, apr: comparisonVehicles[0].apr, term: comparisonVehicles[0].term, down: comparisonVehicles[0].down, extraPmt: comparisonVehicles[0].extraPmt }
+        : v;
+      
+      if (vehicleToUse.type === 'lease') {
         // Lease vehicle - use stored data
         return {
           vehicle: v,
@@ -4298,36 +4319,36 @@
           isLease: true
         };
       } else {
-        // Finance vehicle - calculate as before
-        const maxYear = Math.max(10, Math.ceil(v.years));
-        const curve = buildDepreciationCurve(maxYear, v.post5, v.segment, v.make, v.model);
+        // Finance vehicle - calculate with (possibly synced) financing terms
+        const maxYear = Math.max(10, Math.ceil(vehicleToUse.years));
+        const curve = buildDepreciationCurve(maxYear, vehicleToUse.post5, vehicleToUse.segment, vehicleToUse.make, vehicleToUse.model);
         
-        const residual = interpolateResidual(v.years, curve);
-        const midValueRaw = v.price * residual;
-        const mileageAnalysis = assessMileageImpact(v.mileageAtAnalysis, v.years, v.segment, midValueRaw);
-        const midValue = (midValueRaw + mileageAnalysis.dollarImpact) * (1 + v.condAdj / 100);
-        const { privateValue, tradeValue } = splitPrivateTrade(midValue, v.tradeDisc);
+        const residual = interpolateResidual(vehicleToUse.years, curve);
+        const midValueRaw = vehicleToUse.price * residual;
+        const mileageAnalysis = assessMileageImpact(vehicleToUse.mileageAtAnalysis, vehicleToUse.years, vehicleToUse.segment, midValueRaw);
+        const midValue = (midValueRaw + mileageAnalysis.dollarImpact) * (1 + vehicleToUse.condAdj / 100);
+        const { privateValue, tradeValue } = splitPrivateTrade(midValue, vehicleToUse.tradeDisc);
         const avgValue = (privateValue + tradeValue) / 2;
         
-        const principal = v.price - v.down;
-        const basePmt = monthlyPayment(principal, v.apr, v.term);
-        const monthsElapsed = Math.round(v.years * 12);
-        const bal = remainingBalance(principal, v.apr, v.term, monthsElapsed, v.extraPmt);
+        const principal = vehicleToUse.price - vehicleToUse.down;
+        const basePmt = monthlyPayment(principal, vehicleToUse.apr, vehicleToUse.term);
+        const monthsElapsed = Math.round(vehicleToUse.years * 12);
+        const bal = remainingBalance(principal, vehicleToUse.apr, vehicleToUse.term, monthsElapsed, vehicleToUse.extraPmt);
         const equity = avgValue - bal;
         
         // Cap payments at actual payoff time
-        const payoffMonths = monthsToPayoff(principal, v.apr, v.term, v.extraPmt);
+        const payoffMonths = monthsToPayoff(principal, vehicleToUse.apr, vehicleToUse.term, vehicleToUse.extraPmt);
         const actualPaymentMonths = Math.min(monthsElapsed, payoffMonths);
-        const totalPaymentsMade = v.down + (basePmt + v.extraPmt) * actualPaymentMonths;
+        const totalPaymentsMade = vehicleToUse.down + (basePmt + vehicleToUse.extraPmt) * actualPaymentMonths;
         const equityRecovered = equity;
         const netCostOfOwnership = totalPaymentsMade - equityRecovered;
         const monthlyCostOfOwnership = monthsElapsed > 0 ? netCostOfOwnership / monthsElapsed : 0;
 
         return {
-          vehicle: v,
+          vehicle: vehicleToUse,
           netCost: netCostOfOwnership,
           monthlyCost: monthlyCostOfOwnership,
-          monthlyPayment: basePmt + v.extraPmt,
+          monthlyPayment: basePmt + vehicleToUse.extraPmt,
           equity: equityRecovered,
           totalPayments: totalPaymentsMade,
           isLease: false
@@ -4362,16 +4383,16 @@
       const bestBadge = isBest ? '<span style="margin-left: 8px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;">🏆 BEST VALUE</span>' : '';
 
       card.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
-          <div>
-            <h3 style="margin: 0 0 8px; color: #f1f5f9; font-size: 18px;">
-              ${v.year} ${v.make} ${v.model}
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px; gap: 12px;">
+          <div style="flex: 1;">
+            <h3 style="margin: 0 0 8px; color: #f1f5f9; font-size: 18px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+              <span>${v.year} ${v.make} ${v.model}</span>
               ${typeBadge}
               ${bestBadge}
             </h3>
             <div style="color: #94a3b8; font-size: 13px;">${v.segment || 'Generic'} Segment</div>
           </div>
-          <button onclick="removeVehicleFromComparison(${v.id})" style="background: rgba(239, 68, 68, 0.2); border: 2px solid rgba(239, 68, 68, 0.4); color: #ef4444; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600;">
+          <button onclick="removeVehicleFromComparison(${v.id})" style="background: rgba(239, 68, 68, 0.2); border: 2px solid rgba(239, 68, 68, 0.4); color: #ef4444; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; flex-shrink: 0; align-self: flex-start;">
             ✕ Remove
           </button>
         </div>
@@ -4415,6 +4436,129 @@
       `;
 
       grid.appendChild(card);
+    });
+    
+    // Render comparison charts if 2+ vehicles
+    if (comparisonVehicles.length >= 2) {
+      document.getElementById('comparisonChartsSection').style.display = 'block';
+      renderComparisonCharts(results);
+    } else {
+      document.getElementById('comparisonChartsSection').style.display = 'none';
+    }
+  }
+  
+  // Chart.js comparison charts
+  let valueChart, costChart;
+  
+  function renderComparisonCharts(results) {
+    const colors = ['#10b981', '#6495ED', '#f59e0b'];
+    const labels = results.map(r => `${r.vehicle.year} ${r.vehicle.make} ${r.vehicle.model}`);
+    
+    // Chart 1: Value over time (simplified - fewer points)
+    const valueCtx = document.getElementById('valueComparisonChart');
+    if (valueChart) valueChart.destroy();
+    
+    const datasets = results.map((r, i) => {
+      // Only 10 points instead of 100+ for better performance
+      const points = [];
+      const steps = 10;
+      for (let step = 0; step <= steps; step++) {
+        const year = (r.vehicle.years * step) / steps;
+        const depreciationFactor = 1 - (year / r.vehicle.years) * (1 - r.equity / r.vehicle.price);
+        points.push(Math.max(500, r.vehicle.price * depreciationFactor));
+      }
+      
+      return {
+        label: labels[i],
+        data: points,
+        borderColor: colors[i],
+        backgroundColor: colors[i] + '20',
+        borderWidth: 2,
+        tension: 0.3,
+        fill: false,
+        pointRadius: 0 // No dots for cleaner look
+      };
+    });
+    
+    const maxYears = Math.max(...results.map(r => r.vehicle.years));
+    const timeLabels = [];
+    for (let step = 0; step <= 10; step++) {
+      timeLabels.push(((maxYears * step) / 10).toFixed(1));
+    }
+    
+    valueChart = new Chart(valueCtx, {
+      type: 'line',
+      data: { labels: timeLabels, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { labels: { color: '#94a3b8', font: { size: 11 } } },
+          tooltip: { 
+            callbacks: {
+              label: (ctx) => `${ctx.dataset.label}: $${(ctx.parsed.y/1000).toFixed(1)}k`
+            }
+          }
+        },
+        scales: {
+          x: { 
+            title: { display: true, text: 'Years', color: '#94a3b8' },
+            ticks: { color: '#94a3b8', maxTicksLimit: 6 },
+            grid: { color: '#1e3a5f20' }
+          },
+          y: { 
+            title: { display: true, text: 'Value', color: '#94a3b8' },
+            ticks: { 
+              color: '#94a3b8',
+              callback: (val) => '$' + (val/1000).toFixed(0) + 'k',
+              maxTicksLimit: 6
+            },
+            grid: { color: '#1e3a5f20' }
+          }
+        }
+      }
+    });
+    
+    // Chart 2: Net cost comparison (bar chart)
+    const costCtx = document.getElementById('costComparisonChart');
+    if (costChart) costChart.destroy();
+    
+    costChart = new Chart(costCtx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Net Cost',
+          data: results.map(r => r.netCost),
+          backgroundColor: colors,
+          borderColor: colors,
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `Net Cost: $${(ctx.parsed.y/1000).toFixed(1)}k`
+            }
+          }
+        },
+        scales: {
+          x: { ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { display: false } },
+          y: { 
+            ticks: { 
+              color: '#94a3b8',
+              callback: (val) => '$' + (val/1000).toFixed(0) + 'k',
+              maxTicksLimit: 5
+            },
+            grid: { color: '#1e3a5f20' }
+          }
+        }
+      }
     });
   }
 
@@ -4618,6 +4762,9 @@
 
   // Vehicle comparison
   document.getElementById("addVehicleBtn").addEventListener("click", addVehicleToComparison);
+  
+  // Sync financing checkbox - re-render comparison when toggled
+  document.getElementById("syncFinancing").addEventListener("change", renderVehicleComparison);
 
   // Credit score handler
   document.getElementById("creditScore").addEventListener("input", updateCreditTierDisplay);
