@@ -1604,14 +1604,24 @@
       <div class="col-3">
         <label>Segment Calibration</label>
         <select id="segment">
-          <option value="">None (generic)</option>
-          <option value="EV" selected>Electric Vehicle (EV)</option>
-          <option value="SUV">SUV / Crossover</option>
-          <option value="TRUCK">Pickup Truck</option>
+          <option value="">Select vehicle first...</option>
+          <option value="TRUCK_FULLSIZE">Full-Size Truck</option>
+          <option value="TRUCK_MIDSIZE">Mid-Size Truck</option>
+          <option value="SUV_FULLSIZE">Full-Size SUV</option>
+          <option value="SUV_MIDSIZE">Mid-Size SUV</option>
+          <option value="SUV_COMPACT">Compact SUV</option>
+          <option value="SEDAN_LUXURY">Luxury Sedan</option>
+          <option value="SEDAN_MIDSIZE">Mid-Size Sedan</option>
+          <option value="SEDAN_COMPACT">Compact Sedan</option>
+          <option value="SEDAN_SUBCOMPACT">Subcompact Sedan</option>
+          <option value="SPORTS_CAR">Sports Car</option>
+          <option value="SPORTS_EXOTIC">Exotic/Supercar</option>
+          <option value="MINIVAN">Minivan</option>
+          <option value="EV_MAINSTREAM">Electric Vehicle (Mainstream)</option>
+          <option value="EV_PREMIUM">Electric Vehicle (Premium)</option>
           <option value="HYBRID">Hybrid</option>
-          <option value="SPORTS">Sports/Special (Exotic/Collectible)</option>
         </select>
-        <div class="muted">Adjust curve for vehicle type</div>
+        <div class="muted">Auto-filled based on model selection</div>
       </div>
       <div class="col-3">
         <label>Condition Adjustment (%)</label>
@@ -2952,14 +2962,188 @@
   // ================================
   // DEPRECIATION CURVES
   // ================================
-  const BASE_RESIDUALS = { 0: 1.00, 1: 0.84, 2: 0.72, 3: 0.61, 4: 0.52, 5: 0.45 };
-  const SEGMENT_R5_TARGET = {
-    "EV": 0.412,
-    "TRUCK": 0.596,
-    "SUV": 0.511,
-    "HYBRID": 0.420,  // Faster depreciation than generic - battery concerns, tech obsolescence
-    "SPORTS": 0.720   // Exceptional retention - collectible/exotic vehicles (Ferrari, Porsche GT, limited editions)
+  // ================================
+  // ENHANCED DEPRECIATION MODEL
+  // 15 segment-specific curves + brand modifiers + model overrides
+  // ================================
+  
+  // Segment-specific depreciation curves (0-15 years)
+  const SEGMENT_CURVES = {
+    "TRUCK_FULLSIZE": [1.00, 0.85, 0.76, 0.69, 0.63, 0.58, 0.53, 0.48, 0.44, 0.41, 0.38, 0.35, 0.32, 0.30, 0.28, 0.26],
+    "TRUCK_MIDSIZE": [1.00, 0.83, 0.74, 0.67, 0.61, 0.56, 0.51, 0.46, 0.42, 0.39, 0.36, 0.33, 0.30, 0.28, 0.26, 0.24],
+    "SUV_FULLSIZE": [1.00, 0.82, 0.73, 0.66, 0.60, 0.55, 0.50, 0.46, 0.42, 0.39, 0.36, 0.33, 0.30, 0.28, 0.26, 0.24],
+    "SUV_MIDSIZE": [1.00, 0.80, 0.71, 0.64, 0.58, 0.53, 0.48, 0.44, 0.40, 0.37, 0.34, 0.31, 0.28, 0.26, 0.24, 0.22],
+    "SUV_COMPACT": [1.00, 0.78, 0.68, 0.61, 0.55, 0.50, 0.45, 0.41, 0.37, 0.34, 0.31, 0.28, 0.26, 0.24, 0.22, 0.20],
+    "SEDAN_LUXURY": [1.00, 0.72, 0.60, 0.51, 0.44, 0.38, 0.33, 0.29, 0.25, 0.22, 0.20, 0.18, 0.16, 0.14, 0.13, 0.12],
+    "SEDAN_MIDSIZE": [1.00, 0.76, 0.65, 0.57, 0.50, 0.44, 0.39, 0.35, 0.31, 0.28, 0.25, 0.23, 0.21, 0.19, 0.17, 0.16],
+    "SEDAN_COMPACT": [1.00, 0.75, 0.64, 0.56, 0.49, 0.43, 0.38, 0.34, 0.30, 0.27, 0.24, 0.22, 0.20, 0.18, 0.16, 0.15],
+    "SEDAN_SUBCOMPACT": [1.00, 0.73, 0.62, 0.54, 0.47, 0.41, 0.36, 0.32, 0.28, 0.25, 0.22, 0.20, 0.18, 0.16, 0.15, 0.14],
+    "SPORTS_CAR": [1.00, 0.78, 0.68, 0.60, 0.54, 0.48, 0.43, 0.39, 0.35, 0.32, 0.29, 0.27, 0.25, 0.23, 0.21, 0.20],
+    "SPORTS_EXOTIC": [1.00, 0.82, 0.75, 0.70, 0.66, 0.63, 0.60, 0.58, 0.56, 0.55, 0.54, 0.53, 0.52, 0.52, 0.53, 0.55],
+    "MINIVAN": [1.00, 0.74, 0.63, 0.55, 0.48, 0.42, 0.37, 0.33, 0.29, 0.26, 0.23, 0.21, 0.19, 0.17, 0.15, 0.14],
+    "EV_MAINSTREAM": [1.00, 0.68, 0.55, 0.46, 0.39, 0.34, 0.30, 0.27, 0.24, 0.22, 0.20, 0.18, 0.16, 0.15, 0.14, 0.13],
+    "EV_PREMIUM": [1.00, 0.65, 0.52, 0.43, 0.37, 0.32, 0.28, 0.25, 0.22, 0.20, 0.18, 0.16, 0.15, 0.14, 0.13, 0.12],
+    "HYBRID": [1.00, 0.79, 0.70, 0.63, 0.57, 0.52, 0.47, 0.43, 0.39, 0.36, 0.33, 0.30, 0.28, 0.26, 0.24, 0.22]
   };
+
+  // Brand retention modifiers (applied as multiplier to segment curve)
+  const BRAND_MODIFIERS = {
+    "Toyota": 1.08, "Lexus": 1.06, "Honda": 1.05, "Acura": 1.02, "Subaru": 1.04, "Mazda": 1.02,
+    "Nissan": 0.98, "Infiniti": 0.96, "Mitsubishi": 0.95, "Hyundai": 1.00, "Kia": 1.00,
+    "Genesis": 1.01, "Ford": 1.01, "Chevrolet": 1.00, "GMC": 1.03, "Ram": 1.02, "Jeep": 1.04,
+    "Dodge": 0.98, "Chrysler": 0.95, "Buick": 0.97, "Cadillac": 0.96, "Lincoln": 0.96,
+    "BMW": 0.95, "Mercedes-Benz": 0.96, "Audi": 0.96, "Volkswagen": 0.98, "Porsche": 1.06,
+    "Mini": 0.97, "Volvo": 0.98, "Tesla": 1.02
+  };
+
+  // Model-to-segment mapping (auto-populates segment based on make/model)
+  const MODEL_SEGMENTS = {
+    // Acura
+    "Acura|Integra": "SEDAN_COMPACT", "Acura|MDX": "SUV_MIDSIZE", "Acura|RDX": "SUV_COMPACT", "Acura|TLX": "SEDAN_MIDSIZE",
+    // Audi
+    "Audi|A4": "SEDAN_LUXURY", "Audi|A6": "SEDAN_LUXURY", "Audi|Q5": "SUV_COMPACT", "Audi|Q7": "SUV_FULLSIZE", "Audi|Q8": "SUV_FULLSIZE",
+    // BMW
+    "BMW|3 Series": "SEDAN_LUXURY", "BMW|5 Series": "SEDAN_LUXURY", "BMW|X3": "SUV_COMPACT", "BMW|X5": "SUV_MIDSIZE", "BMW|X7": "SUV_FULLSIZE",
+    // Buick
+    "Buick|Encore": "SUV_COMPACT", "Buick|Envision": "SUV_COMPACT",
+    // Cadillac
+    "Cadillac|CT5": "SEDAN_LUXURY", "Cadillac|Escalade": "SUV_FULLSIZE", "Cadillac|XT4": "SUV_COMPACT", "Cadillac|XT5": "SUV_MIDSIZE", "Cadillac|XT6": "SUV_FULLSIZE",
+    // Chevrolet
+    "Chevrolet|Blazer": "SUV_MIDSIZE", "Chevrolet|Colorado": "TRUCK_MIDSIZE", "Chevrolet|Corvette": "SPORTS_CAR", "Chevrolet|Equinox": "SUV_COMPACT",
+    "Chevrolet|Malibu": "SEDAN_MIDSIZE", "Chevrolet|Silverado 1500": "TRUCK_FULLSIZE", "Chevrolet|Tahoe": "SUV_FULLSIZE", "Chevrolet|Trailblazer": "SUV_COMPACT", "Chevrolet|Traverse": "SUV_MIDSIZE",
+    // Chrysler
+    "Chrysler|Pacifica": "MINIVAN",
+    // Dodge
+    "Dodge|Challenger": "SPORTS_CAR", "Dodge|Charger": "SEDAN_MIDSIZE", "Dodge|Durango": "SUV_MIDSIZE",
+    // Ford
+    "Ford|Bronco": "SUV_MIDSIZE", "Ford|Bronco Sport": "SUV_COMPACT", "Ford|Edge": "SUV_MIDSIZE", "Ford|Escape": "SUV_COMPACT", "Ford|Explorer": "SUV_MIDSIZE",
+    "Ford|F-150": "TRUCK_FULLSIZE", "Ford|F-150 Lightning": "TRUCK_FULLSIZE", "Ford|Maverick": "TRUCK_MIDSIZE", "Ford|Mustang": "SPORTS_CAR", "Ford|Mustang Mach-E": "EV_MAINSTREAM", "Ford|Ranger": "TRUCK_MIDSIZE",
+    // Genesis
+    "Genesis|G70": "SEDAN_LUXURY", "Genesis|G80": "SEDAN_LUXURY", "Genesis|GV70": "SUV_COMPACT", "Genesis|GV80": "SUV_MIDSIZE",
+    // GMC
+    "GMC|Acadia": "SUV_MIDSIZE", "GMC|Canyon": "TRUCK_MIDSIZE", "GMC|Sierra 1500": "TRUCK_FULLSIZE", "GMC|Terrain": "SUV_COMPACT", "GMC|Yukon": "SUV_FULLSIZE",
+    // Honda
+    "Honda|Accord": "SEDAN_MIDSIZE", "Honda|Civic": "SEDAN_COMPACT", "Honda|CR-V": "SUV_COMPACT", "Honda|Odyssey": "MINIVAN", "Honda|Passport": "SUV_MIDSIZE", "Honda|Pilot": "SUV_MIDSIZE", "Honda|Ridgeline": "TRUCK_MIDSIZE",
+    // Hyundai
+    "Hyundai|Elantra": "SEDAN_COMPACT", "Hyundai|IONIQ 5": "EV_MAINSTREAM", "Hyundai|Kona": "SUV_COMPACT", "Hyundai|Palisade": "SUV_MIDSIZE",
+    "Hyundai|Santa Fe": "SUV_MIDSIZE", "Hyundai|Sonata": "SEDAN_MIDSIZE", "Hyundai|Tucson": "SUV_COMPACT",
+    // Infiniti
+    "Infiniti|Q50": "SEDAN_LUXURY", "Infiniti|QX50": "SUV_COMPACT", "Infiniti|QX60": "SUV_MIDSIZE", "Infiniti|QX80": "SUV_FULLSIZE",
+    // Jeep
+    "Jeep|Cherokee": "SUV_COMPACT", "Jeep|Compass": "SUV_COMPACT", "Jeep|Gladiator": "TRUCK_MIDSIZE", "Jeep|Grand Cherokee": "SUV_MIDSIZE", "Jeep|Grand Wagoneer": "SUV_FULLSIZE", "Jeep|Wrangler": "SUV_COMPACT",
+    // Kia
+    "Kia|Carnival": "MINIVAN", "Kia|EV6": "EV_MAINSTREAM", "Kia|Forte": "SEDAN_COMPACT", "Kia|K5": "SEDAN_MIDSIZE", "Kia|Niro": "HYBRID",
+    "Kia|Seltos": "SUV_COMPACT", "Kia|Sorento": "SUV_MIDSIZE", "Kia|Sportage": "SUV_COMPACT", "Kia|Telluride": "SUV_MIDSIZE",
+    // Lexus
+    "Lexus|ES": "SEDAN_LUXURY", "Lexus|GX": "SUV_MIDSIZE", "Lexus|IS": "SEDAN_LUXURY", "Lexus|NX": "SUV_COMPACT", "Lexus|RX": "SUV_MIDSIZE", "Lexus|TX": "SUV_MIDSIZE",
+    // Lincoln
+    "Lincoln|Aviator": "SUV_MIDSIZE", "Lincoln|Corsair": "SUV_COMPACT", "Lincoln|Nautilus": "SUV_MIDSIZE", "Lincoln|Navigator": "SUV_FULLSIZE",
+    // Mazda
+    "Mazda|CX-5": "SUV_COMPACT", "Mazda|CX-50": "SUV_COMPACT", "Mazda|CX-70": "SUV_MIDSIZE", "Mazda|CX-90": "SUV_MIDSIZE", "Mazda|Mazda3": "SEDAN_COMPACT", "Mazda|MX-5": "SPORTS_CAR",
+    // Mercedes-Benz
+    "Mercedes-Benz|C-Class": "SEDAN_LUXURY", "Mercedes-Benz|E-Class": "SEDAN_LUXURY", "Mercedes-Benz|GLC": "SUV_COMPACT", "Mercedes-Benz|GLE": "SUV_MIDSIZE", "Mercedes-Benz|GLS": "SUV_FULLSIZE",
+    // Mini
+    "Mini|Cooper": "SEDAN_SUBCOMPACT", "Mini|Countryman": "SUV_COMPACT",
+    // Mitsubishi
+    "Mitsubishi|Eclipse Cross": "SUV_COMPACT", "Mitsubishi|Outlander": "SUV_COMPACT",
+    // Nissan
+    "Nissan|Altima": "SEDAN_MIDSIZE", "Nissan|Armada": "SUV_FULLSIZE", "Nissan|Ariya": "EV_MAINSTREAM", "Nissan|Frontier": "TRUCK_MIDSIZE",
+    "Nissan|Kicks": "SUV_COMPACT", "Nissan|Leaf": "EV_MAINSTREAM", "Nissan|Murano": "SUV_MIDSIZE", "Nissan|Pathfinder": "SUV_MIDSIZE",
+    "Nissan|Rogue": "SUV_COMPACT", "Nissan|Sentra": "SEDAN_COMPACT", "Nissan|Versa": "SEDAN_SUBCOMPACT", "Nissan|Z": "SPORTS_CAR",
+    // Porsche
+    "Porsche|911": "SPORTS_EXOTIC", "Porsche|Cayenne": "SUV_MIDSIZE", "Porsche|Macan": "SUV_COMPACT", "Porsche|Taycan": "EV_PREMIUM",
+    // Ram
+    "Ram|1500": "TRUCK_FULLSIZE",
+    // Subaru
+    "Subaru|Ascent": "SUV_MIDSIZE", "Subaru|Crosstrek": "SUV_COMPACT", "Subaru|Forester": "SUV_COMPACT", "Subaru|Impreza": "SEDAN_COMPACT",
+    "Subaru|Legacy": "SEDAN_MIDSIZE", "Subaru|Outback": "SUV_COMPACT", "Subaru|WRX": "SPORTS_CAR",
+    // Tesla
+    "Tesla|Model 3": "EV_MAINSTREAM", "Tesla|Model S": "EV_PREMIUM", "Tesla|Model X": "EV_PREMIUM", "Tesla|Model Y": "EV_MAINSTREAM",
+    // Toyota
+    "Toyota|4Runner": "SUV_MIDSIZE", "Toyota|Camry": "SEDAN_MIDSIZE", "Toyota|Corolla": "SEDAN_COMPACT", "Toyota|Highlander": "SUV_MIDSIZE",
+    "Toyota|Land Cruiser": "SUV_FULLSIZE", "Toyota|Prius": "HYBRID", "Toyota|RAV4": "SUV_COMPACT", "Toyota|Tacoma": "TRUCK_MIDSIZE", "Toyota|Tundra": "TRUCK_FULLSIZE",
+    // Volkswagen
+    "Volkswagen|Atlas": "SUV_MIDSIZE", "Volkswagen|Golf GTI": "SEDAN_COMPACT", "Volkswagen|Golf R": "SPORTS_CAR", "Volkswagen|Jetta": "SEDAN_COMPACT",
+    "Volkswagen|Taos": "SUV_COMPACT", "Volkswagen|Tiguan": "SUV_COMPACT",
+    // Volvo
+    "Volvo|EX30": "EV_MAINSTREAM", "Volvo|S60": "SEDAN_LUXURY", "Volvo|XC40": "SUV_COMPACT", "Volvo|XC60": "SUV_COMPACT", "Volvo|XC90": "SUV_MIDSIZE"
+  };
+
+  // Get segment for a make/model combination
+  function getModelSegment(make, model) {
+    const key = `${make}|${model}`;
+    return MODEL_SEGMENTS[key] || "SEDAN_MIDSIZE"; // Default fallback
+  }
+
+  // Model-specific overrides (exceptional performers/laggards)
+  const MODEL_OVERRIDES = {
+    "Toyota|Tacoma": 1.12,
+    "Toyota|4Runner": 1.15,
+    "Toyota|Land Cruiser": 1.20,
+    "Toyota|Tundra": 1.06,
+    "Honda|Civic": 1.05,
+    "Jeep|Wrangler": 1.18,
+    "Jeep|Gladiator": 1.10,
+    "Porsche|911": 1.10,
+    "Ford|Bronco": 1.08,
+    "Ford|Maverick": 1.06,
+    "Chevrolet|Corvette": 1.12,
+    "Subaru|WRX": 1.06,
+    "Tesla|Model Y": 1.08,
+    "Tesla|Model 3": 1.05,
+    "Hyundai|Palisade": 1.06,
+    "Kia|Telluride": 1.08,
+    "BMW|3 Series": 0.95,
+    "Mercedes-Benz|EQS": 0.88,
+    "Nissan|Leaf": 0.85,
+    "Lexus|GX": 1.12,
+    "Mazda|MX-5": 1.08,
+    "Cadillac|Escalade": 1.06,
+    "Dodge|Challenger": 1.08,
+    "Dodge|Charger": 1.04,
+    "Ford|F-150 Lightning": 0.92
+  };
+
+  // Segment-specific mileage impact (% change per 1,000 miles deviation)
+  const MILEAGE_COEFFICIENTS = {
+    "TRUCK_FULLSIZE": -0.35, "TRUCK_MIDSIZE": -0.40, "SUV_FULLSIZE": -0.38, "SUV_MIDSIZE": -0.42,
+    "SUV_COMPACT": -0.45, "SEDAN_LUXURY": -0.55, "SEDAN_MIDSIZE": -0.48, "SEDAN_COMPACT": -0.50,
+    "SEDAN_SUBCOMPACT": -0.52, "SPORTS_CAR": -0.60, "SPORTS_EXOTIC": -0.70, "MINIVAN": -0.45,
+    "EV_MAINSTREAM": -0.30, "EV_PREMIUM": -0.35, "HYBRID": -0.38
+  };
+
+  // Map old segment names to new granular segments
+  const SEGMENT_MAPPING = {
+    "EV": "EV_MAINSTREAM",
+    "TRUCK": "TRUCK_FULLSIZE", 
+    "SUV": "SUV_MIDSIZE",
+    "HYBRID": "HYBRID",
+    "SPORTS": "SPORTS_CAR"
+  };
+
+  // Get the appropriate curve for a segment
+  function getSegmentCurve(segment) {
+    // Map old segment names to new ones
+    const mappedSegment = SEGMENT_MAPPING[segment] || segment;
+    return SEGMENT_CURVES[mappedSegment] || SEGMENT_CURVES["SEDAN_MIDSIZE"]; // Default to mid-size sedan
+  }
+
+  // Get brand modifier
+  function getBrandModifier(make) {
+    return BRAND_MODIFIERS[make] || 1.00;
+  }
+
+  // Get model-specific override
+  function getModelOverride(make, model) {
+    const key = `${make}|${model}`;
+    return MODEL_OVERRIDES[key] || 1.00;
+  }
+
+  // Get mileage coefficient for segment
+  function getMileageCoefficient(segment) {
+    const mappedSegment = SEGMENT_MAPPING[segment] || segment;
+    return MILEAGE_COEFFICIENTS[mappedSegment] || -0.45;
+  }
 
   // ================================
   // UTILITY FUNCTIONS
@@ -2989,57 +3173,40 @@
     return r0 + t * (r1 - r0);
   }
 
-  function extendCurvePost5(baseCurve, maxYear, post5AnnualPct) {
-    const curve = { ...baseCurve };
-    let last = curve[5];
-    const decay = post5AnnualPct / 100;
-    for (let y = 6; y <= maxYear; y++) {
-      last = last * (1 - decay);
-      curve[y] = last;
-    }
-    return curve;
-  }
-
-  function calibrateToSegment5Year(curve, segment) {
-    if (!segment || !SEGMENT_R5_TARGET[segment]) return curve;
-    const target = SEGMENT_R5_TARGET[segment];
-    const current = curve[5];
-    if (!current || current <= 0) return curve;
+  // Build enhanced depreciation curve with brand/model modifiers
+  function buildDepreciationCurve(maxYear, post5AnnualPct, segment, make, model) {
+    // Step 1: Get base segment curve
+    const segmentCurve = getSegmentCurve(segment);
     
-    // Only scale years 0-5 to hit the target
-    // Years 6+ will be recalculated from the new year-5 value
-    const scale = target / current;
-    const out = {};
+    // Step 2: Apply brand modifier
+    const brandMod = getBrandModifier(make);
     
-    // Scale years 0-5 only
-    for (let y = 0; y <= 5; y++) {
-      out[y] = clamp(curve[y] * scale, 0, 1);
-    }
-    out[0] = 1.0; // Always start at 100%
+    // Step 3: Apply model-specific override
+    const modelMod = getModelOverride(make, model);
     
-    // Copy years 6+ as-is (will be recalculated later)
-    for (const [y, r] of Object.entries(curve)) {
-      if (parseInt(y) > 5) {
-        out[y] = r;
+    // Step 4: Combine modifiers
+    const combinedModifier = brandMod * modelMod;
+    
+    // Step 5: Build curve up to year 15 (or maxYear if less)
+    const curve = {};
+    const curveLimit = Math.min(15, maxYear);
+    
+    for (let y = 0; y <= curveLimit; y++) {
+      if (y < segmentCurve.length) {
+        // Apply combined modifier, but clamp to reasonable bounds
+        curve[y] = clamp(segmentCurve[y] * combinedModifier, 0.10, 1.00);
       }
     }
     
-    return out;
-  }
-
-  // Build depreciation curve properly: calibrate first, then extend post-5
-  function buildDepreciationCurve(maxYear, post5AnnualPct, segment) {
-    // Step 1: Calibrate the base curve (years 0-5) to segment target
-    let curve = calibrateToSegment5Year(BASE_RESIDUALS, segment);
-    
-    // Step 2: Extend from the calibrated year-5 value with the post-5 decay rate
-    const year5Value = curve[5];
-    const decay = post5AnnualPct / 100;
-    let last = year5Value;
-    
-    for (let y = 6; y <= maxYear; y++) {
-      last = last * (1 - decay);
-      curve[y] = last;
+    // Step 6: Extend beyond year 15 (or segment curve length) with post-5 decay
+    if (maxYear > curveLimit) {
+      const decay = post5AnnualPct / 100;
+      let last = curve[curveLimit];
+      
+      for (let y = curveLimit + 1; y <= maxYear; y++) {
+        last = last * (1 - decay);
+        curve[y] = clamp(last, 0.05, 1.00);
+      }
     }
     
     return curve;
@@ -3117,14 +3284,21 @@
     };
   }
 
-  function assessMileageImpact(actualMiles, years) {
+  function assessMileageImpact(actualMiles, years, segment, currentValue) {
     const typicalAnnualMiles = 12000;
     const expectedMiles = years * typicalAnnualMiles;
     const delta = actualMiles - expectedMiles;
     
-    // ~$0.10 per mile over/under typical
-    const impactPerMile = 0.10;
-    const dollarImpact = -delta * impactPerMile;
+    // Use segment-specific coefficient (% per 1,000 miles)
+    // Coefficients are NEGATIVE (e.g., -0.45), meaning high mileage reduces value
+    const coefficient = getMileageCoefficient(segment);
+    const deltaThousands = delta / 1000;
+    
+    // Calculate as percentage of CURRENT value (not purchase price!)
+    // If delta is positive (high mileage) and coefficient is negative, impact is negative (value loss)
+    // If delta is negative (low mileage) and coefficient is negative, impact is positive (value gain)
+    const percentageImpact = deltaThousands * coefficient;
+    const dollarImpact = currentValue * (percentageImpact / 100);
     
     let status = "on target";
     if (delta > 5000) status = "high mileage";
@@ -3187,17 +3361,20 @@
 
     // Build depreciation curve
     const maxYear = Math.max(10, Math.ceil(maxPeriod));
-    const curve = buildDepreciationCurve(maxYear, post5, segment);
+    const curve = buildDepreciationCurve(maxYear, post5, segment, make, model);
 
     const residual = interpolateResidual(xYears, curve);
     const midValueRaw = purchasePrice * residual;
 
-    // Mileage impact
-    const mileageAnalysis = assessMileageImpact(mileageAtAnalysis, xYears);
+    // Mileage impact (calculated as % of current depreciated value)
+    const mileageAnalysis = assessMileageImpact(mileageAtAnalysis, xYears, segment, midValueRaw);
     const mileageAdjusted = midValueRaw + mileageAnalysis.dollarImpact;
 
     // Condition adjustment
-    const midValue = mileageAdjusted * (1 + condAdj / 100);
+    let midValue = mileageAdjusted * (1 + condAdj / 100);
+    
+    // Safety: vehicle value floor at $500 (prevents negative values from extreme depreciation/mileage)
+    midValue = Math.max(500, midValue);
 
     const { privateValue, tradeValue } = splitPrivateTrade(midValue, tradeDisc);
     const avgValue = (privateValue + tradeValue) / 2;
@@ -3513,8 +3690,8 @@
       // Calculate actual projected mileage at this point
       const projectedMileage = currentMileage + (milesPerYear * y);
       
-      // Apply mileage impact for this time period
-      const mileageImpact = assessMileageImpact(projectedMileage, y);
+      // Apply mileage impact for this time period (% of current depreciated value)
+      const mileageImpact = assessMileageImpact(projectedMileage, y, segment, baseValue);
       const mileageAdjusted = baseValue + mileageImpact.dollarImpact;
       
       // Apply condition adjustment
@@ -3677,11 +3854,11 @@
 
     const results = scenarios.map(s => {
       const maxYear = Math.max(10, Math.ceil(s.years));
-      const curve = buildDepreciationCurve(maxYear, s.post5, s.segment);
+      const curve = buildDepreciationCurve(maxYear, s.post5, s.segment, s.make, s.model);
       
       const residual = interpolateResidual(s.years, curve);
       const midValueRaw = s.price * residual;
-      const mileageAnalysis = assessMileageImpact(s.mileageAtAnalysis, s.years);
+      const mileageAnalysis = assessMileageImpact(s.mileageAtAnalysis, s.years, s.segment, midValueRaw);
       const midValue = (midValueRaw + mileageAnalysis.dollarImpact) * (1 + s.condAdj / 100);
       const { privateValue, tradeValue } = splitPrivateTrade(midValue, s.tradeDisc);
       const avgValue = (privateValue + tradeValue) / 2;
@@ -3716,7 +3893,7 @@
       const residualAtPayoff = interpolateResidual(payoffYears, curve);
       const midValueAtPayoff = s.price * residualAtPayoff;
       const mileageAtPayoff = (s.mileageAtAnalysis / s.years) * payoffYears; // project mileage
-      const mileageAnalysisPayoff = assessMileageImpact(mileageAtPayoff, payoffYears);
+      const mileageAnalysisPayoff = assessMileageImpact(mileageAtPayoff, payoffYears, s.segment, midValueAtPayoff);
       const adjustedValueAtPayoff = (midValueAtPayoff + mileageAnalysisPayoff.dollarImpact) * (1 + s.condAdj / 100);
       const { privateValue: pvPayoff, tradeValue: tvPayoff } = splitPrivateTrade(adjustedValueAtPayoff, s.tradeDisc);
       const valueAtPayoff = (pvPayoff + tvPayoff) / 2;
@@ -4088,11 +4265,11 @@
       } else {
         // Finance vehicle - calculate as before
         const maxYear = Math.max(10, Math.ceil(v.years));
-        const curve = buildDepreciationCurve(maxYear, v.post5, v.segment);
+        const curve = buildDepreciationCurve(maxYear, v.post5, v.segment, v.make, v.model);
         
         const residual = interpolateResidual(v.years, curve);
         const midValueRaw = v.price * residual;
-        const mileageAnalysis = assessMileageImpact(v.mileageAtAnalysis, v.years);
+        const mileageAnalysis = assessMileageImpact(v.mileageAtAnalysis, v.years, v.segment, midValueRaw);
         const midValue = (midValueRaw + mileageAnalysis.dollarImpact) * (1 + v.condAdj / 100);
         const { privateValue, tradeValue } = splitPrivateTrade(midValue, v.tradeDisc);
         const avgValue = (privateValue + tradeValue) / 2;
@@ -4338,6 +4515,12 @@
     // Clear trim
     trimSelect.innerHTML = '<option value="">Select Trim...</option>';
     document.getElementById("price").value = "";
+    
+    // Auto-populate segment based on make/model
+    if (make && model) {
+      const segment = getModelSegment(make, model);
+      document.getElementById("segment").value = segment;
+    }
     
     if (make && model && VEHICLE_DATABASE[make] && VEHICLE_DATABASE[make][model]) {
       const trims = VEHICLE_DATABASE[make][model];
