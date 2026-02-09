@@ -1,0 +1,46 @@
+{
+  "name": "Vehicle Cost of Ownership Calculator",
+  "short_name": "Car Cost Calc",
+  "description": "Calculate the true cost of owning a vehicle including depreciation, financing, and lease comparison",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><text y='0.9em' font-size='400'>🚗</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "utilities", "productivity"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Calculate Ownership Cost",
+      "short_name": "Calculate",
+      "description": "Calculate vehicle ownership costs",
+      "url": "./#calculate",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text y='0.9em' font-size='80'>📊</text></svg>",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Lease Calculator",
+      "short_name": "Lease",
+      "description": "Compare lease options",
+      "url": "./#lease",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text y='0.9em' font-size='80'>💰</text></svg>",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
