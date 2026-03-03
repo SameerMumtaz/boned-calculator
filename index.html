@@ -3328,6 +3328,29 @@ const DB={
     return (curve[lo] || 0.05) + ((curve[hi] || 0.05) - (curve[lo] || 0.05)) * frac;
   }
 
+  // V3-aware curve builder: returns {curve, v3MileageHandled}
+  function buildV3Curve(maxYear, post5, segment, make, model, year, purchasePrice, mileage, trim) {
+    let curve = buildDepreciationCurve(maxYear, post5, segment, make, model);
+    let v3MileageHandled = false;
+    const v3Result = predict({ make, model, year, mileage: mileage || null, miPerYear: null, trim: trim || null });
+    if (v3Result && v3Result.curve && v3Result.curve.length > 1) {
+      const v3Curve = {};
+      const v3Present = v3Result.presentValue || purchasePrice;
+      for (let i = 0; i < v3Result.curve.length; i++) {
+        v3Curve[i] = v3Present > 0 ? v3Result.curve[i].val / v3Present : (curve[i] || 0.05);
+      }
+      const lastV3Idx = v3Result.curve.length - 1;
+      const lastV3Ret = v3Curve[lastV3Idx];
+      for (let yr = lastV3Idx + 1; yr <= maxYear; yr++) {
+        const oldRatio = curve[yr] && curve[yr - 1] ? curve[yr] / curve[yr - 1] : 0.95;
+        v3Curve[yr] = Math.max(0.03, (v3Curve[yr - 1] || lastV3Ret) * (oldRatio > 0 ? oldRatio : 0.95));
+      }
+      curve = v3Curve;
+      if (mileage) v3MileageHandled = true;
+    }
+    return { curve, v3MileageHandled };
+  }
+
   function getMileageCoefficient(segment) {
     const revMap = {
       'SEDAN_COMPACT': 'compact_car', 'SEDAN_MIDSIZE': 'midsize_car',
@@ -3481,39 +3504,19 @@ const DB={
     if (!isFinite(term) || term <= 0) return setWarn("Loan term must be greater than 0.");
     if (!isFinite(xYears) || xYears < 0) return setWarn("Analysis point must be 0 or greater.");
 
-    // Build depreciation curve
+    // Build depreciation curve (v3-enhanced with trim, market, discontinuation adjustments)
     const maxYear = Math.max(10, Math.ceil(maxPeriod));
-    let curve = buildDepreciationCurve(maxYear, post5, segment, make, model);
-
-    // Override curve with v3 engine data when available (includes trim, market, discontinuation adjustments)
     const trimSelect = document.getElementById("trim");
     const trimName = trimSelect ? trimSelect.value : null;
-    const v3Result = predict({ make, model, year, mileage: mileageAtAnalysis || null, miPerYear: null, trim: trimName });
-    
-    if (v3Result && v3Result.curve && v3Result.curve.length > 1) {
-      // Build a curve object that works with interpolateResidual
-      // v3 curve is forward from present value; convert to retention-from-purchase format
-      // curve[0] = 1.0 (purchase price = 100%), curve[N] = value at year N / purchasePrice
-      const v3Curve = {};
-      const v3Present = v3Result.presentValue || purchasePrice;
-      for (let i = 0; i < v3Result.curve.length; i++) {
-        v3Curve[i] = v3Present > 0 ? v3Result.curve[i].val / v3Present : (curve[i] || 0.05);
-      }
-      // Extend beyond v3 curve using the old curve's decay pattern
-      const lastV3Idx = v3Result.curve.length - 1;
-      const lastV3Ret = v3Curve[lastV3Idx];
-      for (let yr = lastV3Idx + 1; yr <= maxYear; yr++) {
-        const oldRatio = curve[yr] && curve[yr - 1] ? curve[yr] / curve[yr - 1] : 0.95;
-        v3Curve[yr] = Math.max(0.03, (v3Curve[yr - 1] || lastV3Ret) * (oldRatio > 0 ? oldRatio : 0.95));
-      }
-      curve = v3Curve;
-    }
+    const v3Built = buildV3Curve(maxYear, post5, segment, make, model, year, purchasePrice, mileageAtAnalysis, trimName);
+    const curve = v3Built.curve;
+    const v3MileageHandled = v3Built.v3MileageHandled;
 
     const residual = interpolateResidual(xYears, curve);
     const midValueRaw = purchasePrice * residual;
 
     // Mileage impact — skip if v3 already factored it in (mileage was provided)
-    const mileageAnalysis = (v3Result && (mileageAtAnalysis || null))
+    const mileageAnalysis = v3MileageHandled
       ? { dollarImpact: 0, percentImpact: 0, verdict: "Included in v3 prediction", delta: 0, status: "V3 adjusted" }
       : assessMileageImpact(mileageAtAnalysis, xYears, segment, midValueRaw);
     const mileageAdjusted = midValueRaw + mileageAnalysis.dollarImpact;
@@ -3648,7 +3651,7 @@ const DB={
                        currentMileage, mileageAtAnalysis, mileageAnalysis, extraPmt, intPaid, totalPaymentsMade, equityRecovered, netCostOfOwnership, monthlyCostOfOwnership, actualPaymentMonths, monthsElapsed);
 
     // Chart
-    renderChart(curve, maxPeriod, purchasePrice, principal, apr, term, extraPmt, xYears, currentMileage, mileageAtAnalysis, condAdj, tradeDisc);
+    renderChart(curve, maxPeriod, purchasePrice, principal, apr, term, extraPmt, xYears, currentMileage, mileageAtAnalysis, condAdj, tradeDisc, v3MileageHandled);
 
     // Display credit impact if credit score provided
     const creditImpactDiv = document.getElementById("creditImpact");
@@ -3822,7 +3825,7 @@ const DB={
     }
   }
 
-  function renderChart(curve, maxPeriod, purchasePrice, principal, apr, term, extraPmt, exitYears, currentMileage, mileageAtAnalysisPoint, conditionAdj, tradeDiscount) {
+  function renderChart(curve, maxPeriod, purchasePrice, principal, apr, term, extraPmt, exitYears, currentMileage, mileageAtAnalysisPoint, conditionAdj, tradeDiscount, v3MileageHandled) {
     const labels = [];
     const vehicleValues = [];
     const loanBalances = [];
@@ -3837,15 +3840,17 @@ const DB={
       const residual = interpolateResidual(y, curve);
       const baseValue = purchasePrice * residual;
       
-      // Calculate actual projected mileage at this point
-      const projectedMileage = currentMileage + (milesPerYear * y);
+      let adjustedValue = baseValue;
       
-      // Apply mileage impact for this time period (% of current depreciated value)
-      const mileageImpact = assessMileageImpact(projectedMileage, y, segment, baseValue);
-      const mileageAdjusted = baseValue + mileageImpact.dollarImpact;
+      if (!v3MileageHandled) {
+        // Only apply mileage impact if v3 didn't already factor it into the curve
+        const projectedMileage = currentMileage + (milesPerYear * y);
+        const mileageImpact = assessMileageImpact(projectedMileage, y, segment, baseValue);
+        adjustedValue = baseValue + mileageImpact.dollarImpact;
+      }
       
       // Apply condition adjustment
-      const conditionAdjusted = mileageAdjusted * (1 + conditionAdj / 100);
+      const conditionAdjusted = adjustedValue * (1 + conditionAdj / 100);
       
       // Apply trade discount to get average value
       const { privateValue, tradeValue } = splitPrivateTrade(conditionAdjusted, tradeDiscount);
@@ -3990,7 +3995,8 @@ const DB={
       tradeDisc: readNumber("tradeDisc"),
       condAdj: readNumber("condAdj"),
       mileageAtAnalysis: readNumber("mileageAtAnalysis"),
-      extraPmt: readNumber("extraPmt")
+      extraPmt: readNumber("extraPmt"),
+      trim: document.getElementById("trim")?.value || null
     };
 
     const scenarios = [
@@ -4004,11 +4010,14 @@ const DB={
 
     const results = scenarios.map(s => {
       const maxYear = Math.max(10, Math.ceil(s.years));
-      const curve = buildDepreciationCurve(maxYear, s.post5, s.segment, s.make, s.model);
+      const v3Built = buildV3Curve(maxYear, s.post5, s.segment, s.make, s.model, s.year, s.price, s.mileageAtAnalysis, s.trim);
+      const curve = v3Built.curve;
       
       const residual = interpolateResidual(s.years, curve);
       const midValueRaw = s.price * residual;
-      const mileageAnalysis = assessMileageImpact(s.mileageAtAnalysis, s.years, s.segment, midValueRaw);
+      const mileageAnalysis = v3Built.v3MileageHandled
+        ? { dollarImpact: 0 }
+        : assessMileageImpact(s.mileageAtAnalysis, s.years, s.segment, midValueRaw);
       const midValue = (midValueRaw + mileageAnalysis.dollarImpact) * (1 + s.condAdj / 100);
       const { privateValue, tradeValue } = splitPrivateTrade(midValue, s.tradeDisc);
       const avgValue = (privateValue + tradeValue) / 2;
@@ -4369,7 +4378,8 @@ const DB={
       condAdj: readNumber("condAdj"),
       post5: readNumber("post5"),
       tradeDisc: readNumber("tradeDisc"),
-      extraPmt: readNumber("extraPmt")
+      extraPmt: readNumber("extraPmt"),
+      trim: document.getElementById("trim")?.value || null
     };
 
     comparisonVehicles.push(vehicle);
@@ -4426,11 +4436,14 @@ const DB={
       } else {
         // Finance vehicle - calculate with (possibly synced) financing terms
         const maxYear = Math.max(10, Math.ceil(vehicleToUse.years));
-        const curve = buildDepreciationCurve(maxYear, vehicleToUse.post5, vehicleToUse.segment, vehicleToUse.make, vehicleToUse.model);
+        const v3Built = buildV3Curve(maxYear, vehicleToUse.post5, vehicleToUse.segment, vehicleToUse.make, vehicleToUse.model, vehicleToUse.year, vehicleToUse.price, vehicleToUse.mileageAtAnalysis, vehicleToUse.trim);
+        const curve = v3Built.curve;
         
         const residual = interpolateResidual(vehicleToUse.years, curve);
         const midValueRaw = vehicleToUse.price * residual;
-        const mileageAnalysis = assessMileageImpact(vehicleToUse.mileageAtAnalysis, vehicleToUse.years, vehicleToUse.segment, midValueRaw);
+        const mileageAnalysis = v3Built.v3MileageHandled
+          ? { dollarImpact: 0 }
+          : assessMileageImpact(vehicleToUse.mileageAtAnalysis, vehicleToUse.years, vehicleToUse.segment, midValueRaw);
         const midValue = (midValueRaw + mileageAnalysis.dollarImpact) * (1 + vehicleToUse.condAdj / 100);
         const { privateValue, tradeValue } = splitPrivateTrade(midValue, vehicleToUse.tradeDisc);
         const avgValue = (privateValue + tradeValue) / 2;
