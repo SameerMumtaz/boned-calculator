@@ -2,7 +2,7 @@
 
 A comprehensive vehicle cost-of-ownership calculator and depreciation prediction engine — built to compete with Edmunds and KBB.
 
-**[Live Demo →](https://yourusername.github.io/will-this-car-bone-me/)**
+**[Live Demo →](https://SameerMumtaz.github.io/will-this-car-bone-me/)**
 
 ---
 
