@@ -1,40 +1,45 @@
 <!doctype html>
+
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  
+
   <!-- Primary Meta Tags -->
+
   <title>Will This Car Bone Me — v3.1</title>
   <meta name="title" content="Will This Car Bone Me — v3.1" />
   <meta name="description" content="Calculate the true cost of owning a vehicle including depreciation, financing, and equity. Compare lease vs buy options with real 2026 pricing data for 30 brands." />
   <meta name="keywords" content="car cost calculator, vehicle ownership cost, lease vs buy calculator, car depreciation calculator, auto loan calculator, true cost of ownership" />
   <meta name="author" content="Will This Car Bone Me" />
-  
+
   <!-- Open Graph / Facebook -->
+
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Will This Car Bone Me" />
   <meta property="og:description" content="Calculate the true cost of owning a vehicle. Includes depreciation, financing, lease comparison, and credit impact analysis." />
   <meta property="og:image" content="https://yoursite.com/preview.png" />
-  
+
   <!-- Twitter -->
+
   <meta property="twitter:card" content="summary_large_image" />
   <meta property="twitter:title" content="Will This Car Bone Me" />
   <meta property="twitter:description" content="Calculate the true cost of owning a vehicle. Free tool with real 2026 pricing data." />
-  
+
   <!-- PWA / Mobile -->
+
   <meta name="theme-color" content="#0f172a" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="BoneMe v3.1" />
-  
+
   <!-- Manifest -->
 
-  
   <!-- Favicon -->
+
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>" />
-  
+
   <style>
     /* ═══════════════════════════════════════════════════════════════════
        PREMIUM DESIGN SYSTEM v1.0 — Will This Car Bone Me v3.1
@@ -334,6 +339,7 @@
   <div class="subtitle">Calculate your true cost of ownership: what you'll actually spend to own this vehicle after accounting for depreciation and loan payoff</div>
 
   <!-- TOOL STRIP -->
+
   <style>
     @keyframes stripShimmer {
       0% { background-position: -200% center; }
@@ -379,6 +385,7 @@
     }
     .tool-card:hover .tool-arrow { color: #e2e8f0; transform: translateX(4px); }
   </style>
+
   <div id="toolStrip" style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
     <div class="tool-card" id="depBanner" onclick="showTab('depreciation');" style="--accent: linear-gradient(90deg,#06b6d4,#3b82f6); background: linear-gradient(135deg, rgba(6,182,212,0.08), rgba(15,23,42,0.8)); border: 1px solid rgba(6,182,212,0.2); box-shadow: 0 4px 20px rgba(6,182,212,0.08);">
       <div class="tool-icon" style="background: linear-gradient(135deg, rgba(6,182,212,0.15), rgba(59,130,246,0.15)); border: 1px solid rgba(6,182,212,0.2);">📉</div>
@@ -424,6 +431,7 @@
   </div>
 
   <!-- DEPRECIATION ENGINE -->
+
   <div id="depreciationOutput" style="display:none;" role="tabpanel" aria-labelledby="depreciationTab">
     <div class="card" style="background: #0a0f1a; border: 1px solid #1e3a5f30; color: #e2e8f0;">
       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
@@ -431,76 +439,78 @@
         <button onclick="closeDepEngine();" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #94a3b8; font-size: 13px; font-weight: 600; cursor: pointer; padding: 6px 14px; font-family: inherit; transition: all 0.2s; white-space: nowrap;" onmouseenter="this.style.background='#334155';this.style.color='#e2e8f0';" onmouseleave="this.style.background='#1e293b';this.style.color='#94a3b8';">✕ Close</button>
       </div>
       <p style="margin: 0 0 20px; color: #64748b; font-size: 13px;">Anchor-based model powered by iSeeCars data (15M+ vehicles). Add up to 5 vehicles to compare depreciation curves side-by-side.</p>
-      
-      <!-- Vehicle Input Row -->
-      <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; align-items: flex-end;">
-        <div style="flex: 1; min-width: 120px;">
-          <label style="display: block; font-size: 11px; color: #64748b; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Make</label>
-          <select id="depMake" style="width: 100%; padding: 10px; background: #0d192f; border: 1px solid #1e3a5f; border-radius: 8px; color: #e2e8f0; font-size: 14px; font-family: inherit;">
-            <option value="">Select...</option>
-          </select>
-        </div>
-        <div style="flex: 1; min-width: 120px;">
-          <label style="display: block; font-size: 11px; color: #64748b; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Model</label>
-          <select id="depModel" style="width: 100%; padding: 10px; background: #0d192f; border: 1px solid #1e3a5f; border-radius: 8px; color: #e2e8f0; font-size: 14px; font-family: inherit;">
-            <option value="">Select make first...</option>
-          </select>
-        </div>
-        <div style="flex: 0 0 90px;">
-          <label style="display: block; font-size: 11px; color: #64748b; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Year</label>
-          <select id="depYear" style="width: 100%; padding: 10px; background: #0d192f; border: 1px solid #1e3a5f; border-radius: 8px; color: #e2e8f0; font-size: 14px; font-family: inherit;">
-            <option value="">—</option>
-          </select>
-        </div>
-        <div style="flex: 1; min-width: 120px;">
-          <label style="display: block; font-size: 11px; color: #64748b; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Trim</label>
-          <select id="depTrim" style="width: 100%; padding: 10px; background: #0d192f; border: 1px solid #1e3a5f; border-radius: 8px; color: #e2e8f0; font-size: 14px; font-family: inherit;">
-            <option value="">Optional</option>
-          </select>
-        </div>
-        <div style="flex: 0 0 110px;">
-          <label style="display: block; font-size: 11px; color: #64748b; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Mileage</label>
-          <input id="depMileage" type="number" placeholder="Avg" style="width: 100%; padding: 10px; background: #0d192f; border: 1px solid #1e3a5f; border-radius: 8px; color: #e2e8f0; font-size: 14px; font-family: inherit; box-sizing: border-box;" />
-        </div>
-        <div style="flex: 0 0 110px;">
-          <label style="display: block; font-size: 11px; color: #64748b; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Miles/Year</label>
-          <input id="depMiPerYear" type="number" placeholder="Avg" style="width: 100%; padding: 10px; background: #0d192f; border: 1px solid #1e3a5f; border-radius: 8px; color: #e2e8f0; font-size: 14px; font-family: inherit; box-sizing: border-box;" />
-        </div>
-        <div style="flex: 0 0 auto;">
-          <button id="depAddBtn" style="padding: 10px 22px; background: linear-gradient(135deg, #06b6d4, #3b82f6); border: none; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap;">+ Add Vehicle</button>
-        </div>
-      </div>
-      
-      <!-- Active vehicle tags -->
-      <div id="depVehicleTags" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;"></div>
-      
-      <!-- Chart Mode Toggle -->
-      <div id="depChartControls" style="display: none;">
-        <div style="display: flex; gap: 2px; margin-bottom: 12px; background: #0d192f; border-radius: 8px; padding: 3px; width: fit-content;">
-          <button class="dep-mode-btn active" data-mode="value" style="padding: 6px 16px; border-radius: 6px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; background: linear-gradient(135deg,#06b6d4,#3b82f6); color: #fff;">$ Value</button>
-          <button class="dep-mode-btn" data-mode="retention" style="padding: 6px 16px; border-radius: 6px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; background: transparent; color: #64748b;">% of Purchase</button>
-          <button class="dep-mode-btn" data-mode="annual" style="padding: 6px 16px; border-radius: 6px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; background: transparent; color: #64748b;">Annual Loss</button>
-        </div>
-        
-        <!-- Chart -->
-        <div style="background: #0d192f; border: 1px solid #1e3a5f25; border-radius: 14px; padding: 18px 14px 10px; margin-bottom: 18px; position: relative; min-height: 320px;">
-          <canvas id="depChart"></canvas>
-        </div>
-      </div>
-      
-      <!-- Vehicle Cards -->
-      <div id="depCards" style="display: grid; gap: 14px; margin-bottom: 18px;"></div>
-      
-      <!-- Comparison Table -->
-      <div id="depComparisonTable" style="display: none;"></div>
-      
-      <!-- Methodology -->
-      <div id="depMethodology" style="display: none; background: #0d192f30; border: 1px solid #1e3a5f10; border-radius: 10px; padding: 12px 16px; font-size: 11px; color: #334155; line-height: 1.6;">
-        <strong style="color: #475569;">v3.1 Methodology:</strong> Anchor-based prediction model powered by iSeeCars depreciation data (15M+ vehicles analyzed). L1: Model-specific anchor points (dep3/dep5/dep7/dep10) interpolated via Fritsch-Carlson monotonic cubic splines into smooth lifecycle curves — 198 models, 95.4% model-specific coverage. L2: Real trim-level MSRPs (683 trims from Edmunds) with position-based retention modifiers. L3: Mileage deviation impact. L4: Discontinuation premium/penalty. L5: Data confidence scoring. Tier badges: <span style="color:#10b981">T1★</span> = full iSeeCars 4-point data, <span style="color:#06b6d4">T2</span> = proxy/sibling, <span style="color:#f59e0b">T3</span> = dep5 real + derived, <span style="color:#f43f5e">T4</span> = EV segment average.
-      </div>
+
+```
+  <!-- Vehicle Input Row -->
+  <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; align-items: flex-end;">
+    <div style="flex: 1; min-width: 120px;">
+      <label style="display: block; font-size: 11px; color: #64748b; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Make</label>
+      <select id="depMake" style="width: 100%; padding: 10px; background: #0d192f; border: 1px solid #1e3a5f; border-radius: 8px; color: #e2e8f0; font-size: 14px; font-family: inherit;">
+        <option value="">Select...</option>
+      </select>
+    </div>
+    <div style="flex: 1; min-width: 120px;">
+      <label style="display: block; font-size: 11px; color: #64748b; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Model</label>
+      <select id="depModel" style="width: 100%; padding: 10px; background: #0d192f; border: 1px solid #1e3a5f; border-radius: 8px; color: #e2e8f0; font-size: 14px; font-family: inherit;">
+        <option value="">Select make first...</option>
+      </select>
+    </div>
+    <div style="flex: 0 0 90px;">
+      <label style="display: block; font-size: 11px; color: #64748b; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Year</label>
+      <select id="depYear" style="width: 100%; padding: 10px; background: #0d192f; border: 1px solid #1e3a5f; border-radius: 8px; color: #e2e8f0; font-size: 14px; font-family: inherit;">
+        <option value="">—</option>
+      </select>
+    </div>
+    <div style="flex: 1; min-width: 120px;">
+      <label style="display: block; font-size: 11px; color: #64748b; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Trim</label>
+      <select id="depTrim" style="width: 100%; padding: 10px; background: #0d192f; border: 1px solid #1e3a5f; border-radius: 8px; color: #e2e8f0; font-size: 14px; font-family: inherit;">
+        <option value="">Optional</option>
+      </select>
+    </div>
+    <div style="flex: 0 0 110px;">
+      <label style="display: block; font-size: 11px; color: #64748b; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Mileage</label>
+      <input id="depMileage" type="number" placeholder="Avg" style="width: 100%; padding: 10px; background: #0d192f; border: 1px solid #1e3a5f; border-radius: 8px; color: #e2e8f0; font-size: 14px; font-family: inherit; box-sizing: border-box;" />
+    </div>
+    <div style="flex: 0 0 110px;">
+      <label style="display: block; font-size: 11px; color: #64748b; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Miles/Year</label>
+      <input id="depMiPerYear" type="number" placeholder="Avg" style="width: 100%; padding: 10px; background: #0d192f; border: 1px solid #1e3a5f; border-radius: 8px; color: #e2e8f0; font-size: 14px; font-family: inherit; box-sizing: border-box;" />
+    </div>
+    <div style="flex: 0 0 auto;">
+      <button id="depAddBtn" style="padding: 10px 22px; background: linear-gradient(135deg, #06b6d4, #3b82f6); border: none; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap;">+ Add Vehicle</button>
     </div>
   </div>
+  
+  <!-- Active vehicle tags -->
+  <div id="depVehicleTags" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;"></div>
+  
+  <!-- Chart Mode Toggle -->
+  <div id="depChartControls" style="display: none;">
+    <div style="display: flex; gap: 2px; margin-bottom: 12px; background: #0d192f; border-radius: 8px; padding: 3px; width: fit-content;">
+      <button class="dep-mode-btn active" data-mode="value" style="padding: 6px 16px; border-radius: 6px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; background: linear-gradient(135deg,#06b6d4,#3b82f6); color: #fff;">$ Value</button>
+      <button class="dep-mode-btn" data-mode="retention" style="padding: 6px 16px; border-radius: 6px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; background: transparent; color: #64748b;">% of Purchase</button>
+      <button class="dep-mode-btn" data-mode="annual" style="padding: 6px 16px; border-radius: 6px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; background: transparent; color: #64748b;">Annual Loss</button>
+    </div>
+    
+    <!-- Chart -->
+    <div style="background: #0d192f; border: 1px solid #1e3a5f25; border-radius: 14px; padding: 18px 14px 10px; margin-bottom: 18px; position: relative; min-height: 320px;">
+      <canvas id="depChart"></canvas>
+    </div>
+  </div>
+  
+  <!-- Vehicle Cards -->
+  <div id="depCards" style="display: grid; gap: 14px; margin-bottom: 18px;"></div>
+  
+  <!-- Comparison Table -->
+  <div id="depComparisonTable" style="display: none;"></div>
+  
+  <!-- Methodology -->
+  <div id="depMethodology" style="display: none; background: #0d192f30; border: 1px solid #1e3a5f10; border-radius: 10px; padding: 12px 16px; font-size: 11px; color: #334155; line-height: 1.6;">
+    <strong style="color: #475569;">v3.1 Methodology:</strong> Anchor-based prediction model powered by iSeeCars depreciation data (15M+ vehicles analyzed). L1: Model-specific anchor points (dep3/dep5/dep7/dep10) interpolated via Fritsch-Carlson monotonic cubic splines into smooth lifecycle curves — 198 models, 95.4% model-specific coverage. L2: Real trim-level MSRPs (683 trims from Edmunds) with position-based retention modifiers. L3: Mileage deviation impact. L4: Discontinuation premium/penalty. L5: Data confidence scoring. Tier badges: <span style="color:#10b981">T1★</span> = full iSeeCars 4-point data, <span style="color:#06b6d4">T2</span> = proxy/sibling, <span style="color:#f59e0b">T3</span> = dep5 real + derived, <span style="color:#f43f5e">T4</span> = EV segment average.
+  </div>
+</div>
+```
 
+  </div>
 
   <style>
     @keyframes fadeIn {
@@ -531,9 +541,9 @@
       }
     }
   </style>
-      
+
   </style>
-  
+
   <script>
     // Simple fade-in on page load with fallback
     function triggerFadeIn() {
@@ -556,6 +566,7 @@
   </script>
 
   <!-- DATA EXPLORER -->
+
   <div id="explorerOutput" style="display:none;" role="tabpanel" aria-labelledby="explorerTab">
     <div class="card" style="background: #0a0f1a; border: 1px solid #1e3a5f30; color: #e2e8f0;">
       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
@@ -564,21 +575,25 @@
       </div>
       <p style="margin: 0 0 24px; color: #64748b; font-size: 13px;">Explore retention data across 198 models and 14 vehicle segments, powered by 15M+ real-world transactions.</p>
 
-      <!-- DATA COVERAGE STATS -->
-      <div id="explorerStats" style="margin-bottom: 32px;"></div>
+```
+  <!-- DATA COVERAGE STATS -->
+  <div id="explorerStats" style="margin-bottom: 32px;"></div>
 
-      <!-- RETENTION LEADERS -->
-      <div id="explorerLeaders" style="margin-bottom: 32px;"></div>
+  <!-- RETENTION LEADERS -->
+  <div id="explorerLeaders" style="margin-bottom: 32px;"></div>
 
-      <!-- VEHICLE VS SEGMENT -->
-      <div id="explorerVsSegment" style="margin-bottom: 32px;"></div>
+  <!-- VEHICLE VS SEGMENT -->
+  <div id="explorerVsSegment" style="margin-bottom: 32px;"></div>
 
-      <!-- SEGMENT OVERVIEW -->
-      <div id="explorerSegments"></div>
-    </div>
+  <!-- SEGMENT OVERVIEW -->
+  <div id="explorerSegments"></div>
+</div>
+```
+
   </div>
 
   <!-- VEHICLE INFO -->
+
   <div class="card">
     <h2>Vehicle Information</h2>
     <div class="grid">
@@ -661,6 +676,7 @@
   </div>
 
   <!-- PURCHASE & FINANCING -->
+
   <div class="card">
     <h2>Purchase & Financing</h2>
     <div class="grid">
@@ -693,6 +709,7 @@
   </div>
 
   <!-- DEPRECIATION & MILEAGE -->
+
   <div class="card">
     <h2>Exit Analysis (When You Sell/Trade)</h2>
     <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-left: 4px solid #06b6d4; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
@@ -747,6 +764,7 @@
   </div>
 
   <!-- MARKET FACTORS -->
+
   <div class="card">
     <h2>Market Factors & Additional Costs</h2>
     <div class="grid">
@@ -795,6 +813,7 @@
   </div>
 
   <!-- RESULTS -->
+
   <div id="output" style="display:none;" role="tabpanel" aria-labelledby="resultsTab">
     <!-- COST OF OWNERSHIP - PRIMARY EMPHASIS -->
     <div class="card hero-cost-card">
@@ -806,153 +825,157 @@
           <div class="sub" id="netCostSub">Total payments − equity recovered</div>
         </div>
 
-        <div class="kpi col-4">
-          <h3>True Monthly Cost</h3>
-          <div class="val" id="monthlyCost">$—</div>
-          <div class="sub" id="monthlyCostSub">True monthly cost to own this vehicle</div>
-        </div>
-        
-        <div class="kpi col-4">
-          <h3>Total Payments Made</h3>
-          <div class="val" id="totalPmts">$—</div>
-          <div class="sub" id="totalPmtsSub">—</div>
-        </div>
-        
-        <div class="kpi col-4" id="equityRecoveredKpi">
-          <h3>Net Proceeds at Exit</h3>
-          <div class="val" id="equityRecovered">$—</div>
-          <div class="sub" id="equityRecoveredSub">—</div>
-        </div>
-        
-        <div class="kpi col-4" id="equity-breakdown">
-          <h3>Equity Position</h3>
-          <div class="val" id="equity">$—</div>
-          <div class="sub" id="equitySub">Vehicle value − remaining balance</div>
-        </div>
-        
-        <div class="kpi col-4" id="operatingCostsKpi" style="display: none;">
-          <h3>Operating Costs</h3>
-          <div class="val" id="operatingCosts">$—</div>
-          <div class="sub">Insurance + maintenance + registration</div>
-        </div>
-      </div>
-      
-      <!-- Messages at bottom of Cost of Ownership section -->
-      <div id="warn" class="warn" style="display:none; margin-top: 20px;"></div>
-      <div id="info" class="info" style="display:none; margin-top: 20px;"></div>
-      <div id="creditImpact" class="info" style="display:none; margin-top: 20px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%); border: 2px solid rgba(6, 182, 212, 0.4);"></div>
-      <div id="leaseSuggestion" class="info" style="display:none; margin-top: 20px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%); border: 2px solid rgba(16, 185, 129, 0.4); position: relative;"></div>
+```
+    <div class="kpi col-4">
+      <h3>True Monthly Cost</h3>
+      <div class="val" id="monthlyCost">$—</div>
+      <div class="sub" id="monthlyCostSub">True monthly cost to own this vehicle</div>
+    </div>
+    
+    <div class="kpi col-4">
+      <h3>Total Payments Made</h3>
+      <div class="val" id="totalPmts">$—</div>
+      <div class="sub" id="totalPmtsSub">—</div>
+    </div>
+    
+    <div class="kpi col-4" id="equityRecoveredKpi">
+      <h3>Net Proceeds at Exit</h3>
+      <div class="val" id="equityRecovered">$—</div>
+      <div class="sub" id="equityRecoveredSub">—</div>
+    </div>
+    
+    <div class="kpi col-4" id="equity-breakdown">
+      <h3>Equity Position</h3>
+      <div class="val" id="equity">$—</div>
+      <div class="sub" id="equitySub">Vehicle value − remaining balance</div>
+    </div>
+    
+    <div class="kpi col-4" id="operatingCostsKpi" style="display: none;">
+      <h3>Operating Costs</h3>
+      <div class="val" id="operatingCosts">$—</div>
+      <div class="sub">Insurance + maintenance + registration</div>
+    </div>
+  </div>
+  
+  <!-- Messages at bottom of Cost of Ownership section -->
+  <div id="warn" class="warn" style="display:none; margin-top: 20px;"></div>
+  <div id="info" class="info" style="display:none; margin-top: 20px;"></div>
+  <div id="creditImpact" class="info" style="display:none; margin-top: 20px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%); border: 2px solid rgba(6, 182, 212, 0.4);"></div>
+  <div id="leaseSuggestion" class="info" style="display:none; margin-top: 20px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%); border: 2px solid rgba(16, 185, 129, 0.4); position: relative;"></div>
+</div>
+
+<!-- KEY METRICS -->
+<div class="card">
+  <h2>Vehicle Valuation at Exit Point</h2>
+  <div class="out">
+    <div class="kpi col-4">
+      <h3>Market Value (Avg)</h3>
+      <div class="val" id="avgValue">$—</div>
+      <div class="sub">Average of private & trade-in</div>
     </div>
 
-    <!-- KEY METRICS -->
-    <div class="card">
-      <h2>Vehicle Valuation at Exit Point</h2>
-      <div class="out">
-        <div class="kpi col-4">
-          <h3>Market Value (Avg)</h3>
-          <div class="val" id="avgValue">$—</div>
-          <div class="sub">Average of private & trade-in</div>
-        </div>
-
-        <div class="kpi col-4">
-          <h3>Private Party Value</h3>
-          <div class="val" id="privateValue">$—</div>
-          <div class="sub" id="privateSub">—</div>
-        </div>
-
-        <div class="kpi col-4">
-          <h3>Trade-In Value</h3>
-          <div class="val" id="tradeValue">$—</div>
-          <div class="sub" id="tradeSub">—</div>
-        </div>
-      </div>
+    <div class="kpi col-4">
+      <h3>Private Party Value</h3>
+      <div class="val" id="privateValue">$—</div>
+      <div class="sub" id="privateSub">—</div>
     </div>
 
-    <!-- LOAN DETAILS -->
-    <div class="card">
-      <h2>Loan Analysis</h2>
-      <div class="out">
-        <div class="kpi col-3">
-          <h3>Monthly Payment</h3>
-          <div class="val" id="pmt">$—</div>
-          <div class="sub">Base payment (P&I)</div>
-        </div>
+    <div class="kpi col-4">
+      <h3>Trade-In Value</h3>
+      <div class="val" id="tradeValue">$—</div>
+      <div class="sub" id="tradeSub">—</div>
+    </div>
+  </div>
+</div>
 
-        <div class="kpi col-3">
-          <h3>Remaining Balance</h3>
-          <div class="val" id="balance">$—</div>
-          <div class="sub" id="monthsElapsed">—</div>
-        </div>
-
-        <div class="kpi col-3">
-          <h3>Total Interest Paid</h3>
-          <div class="val" id="totalInterest">$—</div>
-          <div class="sub">Through analysis point</div>
-        </div>
-
-        <div class="kpi col-3">
-          <h3>Payoff Timeline</h3>
-          <div class="val" id="payoffTime">—</div>
-          <div class="sub" id="payoffSub">With extra payments</div>
-        </div>
-      </div>
+<!-- LOAN DETAILS -->
+<div class="card">
+  <h2>Loan Analysis</h2>
+  <div class="out">
+    <div class="kpi col-3">
+      <h3>Monthly Payment</h3>
+      <div class="val" id="pmt">$—</div>
+      <div class="sub">Base payment (P&I)</div>
     </div>
 
-    <!-- DEPRECIATION INSIGHTS -->
-    <div class="card">
-      <h2>Depreciation Analysis</h2>
-      <div class="out">
-        <div class="kpi col-3">
-          <h3>Residual Value %</h3>
-          <div class="val" id="residualPct">—%</div>
-          <div class="sub">Based on depreciation curve</div>
-        </div>
-
-        <div class="kpi col-3">
-          <h3>Total Depreciation</h3>
-          <div class="val" id="totalDepr">$—</div>
-          <div class="sub">Original price to current value</div>
-        </div>
-
-        <div class="kpi col-3">
-          <h3>Mileage Impact</h3>
-          <div class="val" id="mileageImpact">—</div>
-          <div class="sub" id="mileageSub">—</div>
-        </div>
-
-        <div class="kpi col-3">
-          <h3>Annual Depreciation</h3>
-          <div class="val" id="annualDepr">$—</div>
-          <div class="sub">Average per year</div>
-        </div>
-      </div>
+    <div class="kpi col-3">
+      <h3>Remaining Balance</h3>
+      <div class="val" id="balance">$—</div>
+      <div class="sub" id="monthsElapsed">—</div>
     </div>
 
-    <!-- CHART -->
-    <div class="card">
-      <h2>Value vs Balance Over Time</h2>
-      <div class="chart-container">
-        <canvas id="equityChart"></canvas>
-      </div>
+    <div class="kpi col-3">
+      <h3>Total Interest Paid</h3>
+      <div class="val" id="totalInterest">$—</div>
+      <div class="sub">Through analysis point</div>
     </div>
 
-    <!-- DETAILED TABLE -->
-    <div class="card">
-      <h2>Detailed Breakdown</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Category</th>
-            <th>Value</th>
-            <th>Notes</th>
-          </tr>
-        </thead>
-        <tbody id="detailsTable"></tbody>
-      </table>
+    <div class="kpi col-3">
+      <h3>Payoff Timeline</h3>
+      <div class="val" id="payoffTime">—</div>
+      <div class="sub" id="payoffSub">With extra payments</div>
     </div>
+  </div>
+</div>
+
+<!-- DEPRECIATION INSIGHTS -->
+<div class="card">
+  <h2>Depreciation Analysis</h2>
+  <div class="out">
+    <div class="kpi col-3">
+      <h3>Residual Value %</h3>
+      <div class="val" id="residualPct">—%</div>
+      <div class="sub">Based on depreciation curve</div>
+    </div>
+
+    <div class="kpi col-3">
+      <h3>Total Depreciation</h3>
+      <div class="val" id="totalDepr">$—</div>
+      <div class="sub">Original price to current value</div>
+    </div>
+
+    <div class="kpi col-3">
+      <h3>Mileage Impact</h3>
+      <div class="val" id="mileageImpact">—</div>
+      <div class="sub" id="mileageSub">—</div>
+    </div>
+
+    <div class="kpi col-3">
+      <h3>Annual Depreciation</h3>
+      <div class="val" id="annualDepr">$—</div>
+      <div class="sub">Average per year</div>
+    </div>
+  </div>
+</div>
+
+<!-- CHART -->
+<div class="card">
+  <h2>Value vs Balance Over Time</h2>
+  <div class="chart-container">
+    <canvas id="equityChart"></canvas>
+  </div>
+</div>
+
+<!-- DETAILED TABLE -->
+<div class="card">
+  <h2>Detailed Breakdown</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Value</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody id="detailsTable"></tbody>
+  </table>
+</div>
+```
+
   </div>
 
   <!-- SCENARIO COMPARISON (Separate Tab) -->
+
   <div id="scenarioOutput" style="display:none;">
     <div class="card">
       <h2>💡 Compare Financing Routes</h2>
@@ -964,6 +987,7 @@
   </div>
 
   <!-- VEHICLE COMPARISON (Separate Tab) -->
+
   <div id="vehiclesOutput" style="display:none;">
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
@@ -981,38 +1005,42 @@
           <div style="color: #64748b; font-size: 11px; margin-top: 4px; text-align: right;">Same terms for all vehicles</div>
         </div>
       </div>
-      
-      <button class="btn" id="addVehicleBtn" style="margin-bottom: 24px;">
-        ➕ Add Vehicle to Compare
-      </button>
-      
-      <!-- Comparison Charts (shows when 2+ vehicles) -->
-      <div id="comparisonChartsSection" style="display: none; margin-bottom: 30px;">
-        <div style="background: #0d192f; border: 1px solid #1e3a5f30; border-radius: 14px; padding: 24px; margin-bottom: 20px;">
-          <h3 style="margin: 0 0 20px; font-size: 18px; font-weight: 700;">📊 Value Over Time</h3>
-          <div style="height: 250px; position: relative;">
-            <canvas id="valueComparisonChart"></canvas>
-          </div>
-        </div>
-        <div style="background: #0d192f; border: 1px solid #1e3a5f30; border-radius: 14px; padding: 24px;">
-          <h3 style="margin: 0 0 20px; font-size: 18px; font-weight: 700;">💰 Net Cost Comparison</h3>
-          <div style="height: 200px; position: relative;">
-            <canvas id="costComparisonChart"></canvas>
-          </div>
-        </div>
+
+```
+  <button class="btn" id="addVehicleBtn" style="margin-bottom: 24px;">
+    ➕ Add Vehicle to Compare
+  </button>
+  
+  <!-- Comparison Charts (shows when 2+ vehicles) -->
+  <div id="comparisonChartsSection" style="display: none; margin-bottom: 30px;">
+    <div style="background: #0d192f; border: 1px solid #1e3a5f30; border-radius: 14px; padding: 24px; margin-bottom: 20px;">
+      <h3 style="margin: 0 0 20px; font-size: 18px; font-weight: 700;">📊 Value Over Time</h3>
+      <div style="height: 250px; position: relative;">
+        <canvas id="valueComparisonChart"></canvas>
       </div>
-      
-      <div id="vehicleComparisonGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px;"></div>
-      
-      <div id="noVehiclesMessage" style="text-align: center; padding: 60px 20px; color: #64748b;">
-        <div style="font-size: 48px; margin-bottom: 16px;">🚗</div>
-        <h3 style="color: #94a3b8; margin: 0 0 8px;">No Vehicles Added Yet</h3>
-        <p style="margin: 0;">Click "Add Vehicle to Compare" to start comparing different vehicles.</p>
+    </div>
+    <div style="background: #0d192f; border: 1px solid #1e3a5f30; border-radius: 14px; padding: 24px;">
+      <h3 style="margin: 0 0 20px; font-size: 18px; font-weight: 700;">💰 Net Cost Comparison</h3>
+      <div style="height: 200px; position: relative;">
+        <canvas id="costComparisonChart"></canvas>
       </div>
     </div>
   </div>
+  
+  <div id="vehicleComparisonGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px;"></div>
+  
+  <div id="noVehiclesMessage" style="text-align: center; padding: 60px 20px; color: #64748b;">
+    <div style="font-size: 48px; margin-bottom: 16px;">🚗</div>
+    <h3 style="color: #94a3b8; margin: 0 0 8px;">No Vehicles Added Yet</h3>
+    <p style="margin: 0;">Click "Add Vehicle to Compare" to start comparing different vehicles.</p>
+  </div>
+</div>
+```
+
+  </div>
 
   <!-- LEASE CALCULATOR (Separate Tab) -->
+
   <div id="leaseOutput" style="display:none;" role="tabpanel" aria-labelledby="leaseTab">
     <div class="card">
       <h2>💰 Lease Calculator</h2>
@@ -1020,205 +1048,210 @@
         Calculate your true lease costs including monthly payments, fees, and total cost over the lease term. Add to vehicle comparison to see how leasing stacks up against financing.
       </p>
 
-      <!-- LEASE VEHICLE INFO -->
-      <h3 style="color: #cbd5e1; font-size: 16px; margin: 24px 0 16px; font-weight: 700;">Vehicle Information</h3>
-      <div class="grid">
-        <div class="col-3">
-          <label>Year</label>
-          <select id="leaseYear">
-            <option value="2027">2027</option>
-            <option value="2026" selected>2026</option>
-            <option value="2025">2025</option>
-            <option value="2024">2024</option>
-            <option value="2023">2023</option>
-          </select>
+```
+  <!-- LEASE VEHICLE INFO -->
+  <h3 style="color: #cbd5e1; font-size: 16px; margin: 24px 0 16px; font-weight: 700;">Vehicle Information</h3>
+  <div class="grid">
+    <div class="col-3">
+      <label>Year</label>
+      <select id="leaseYear">
+        <option value="2027">2027</option>
+        <option value="2026" selected>2026</option>
+        <option value="2025">2025</option>
+        <option value="2024">2024</option>
+        <option value="2023">2023</option>
+      </select>
+    </div>
+    <div class="col-3">
+      <label>Make</label>
+      <select id="leaseMake">
+        <option value="">Select Make...</option>
+        <option value="Toyota">Toyota</option>
+        <option value="Honda">Honda</option>
+        <option value="Ford">Ford</option>
+        <option value="Chevrolet">Chevrolet</option>
+        <option value="BMW">BMW</option>
+        <option value="Mercedes-Benz">Mercedes-Benz</option>
+        <option value="Audi">Audi</option>
+        <option value="Lexus">Lexus</option>
+        <option value="Hyundai">Hyundai</option>
+        <option value="Kia">Kia</option>
+      </select>
+    </div>
+    <div class="col-3">
+      <label>Model</label>
+      <input id="leaseModel" type="text" placeholder="e.g., Accord, X5, RAV4" />
+    </div>
+    <div class="col-3">
+      <label>Segment</label>
+      <select id="leaseSegment">
+        <option value="Generic">Generic / Sedan</option>
+        <option value="SUV">SUV / Crossover</option>
+        <option value="Truck">Truck</option>
+        <option value="Luxury">Luxury</option>
+        <option value="Sports">Sports / Performance</option>
+        <option value="EV">Electric Vehicle</option>
+        <option value="Hybrid">Hybrid</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- LEASE PRICING -->
+  <h3 style="color: #cbd5e1; font-size: 16px; margin: 24px 0 16px; font-weight: 700;">Lease Pricing</h3>
+  <div class="grid">
+    <div class="col-4">
+      <label>MSRP (Sticker Price) ($)</label>
+      <input id="leaseMSRP" type="number" inputmode="decimal" min="0" step="100" value="45000" />
+      <div class="muted">Manufacturer suggested retail price</div>
+    </div>
+    <div class="col-4">
+      <label>Agreed Upon Price ($)</label>
+      <input id="leaseAgreedPrice" type="number" inputmode="decimal" min="0" step="100" value="42000" />
+      <div class="muted">Negotiated selling price (capitalized cost)</div>
+    </div>
+    <div class="col-4">
+      <label>Down Payment / Cap Reduction ($)</label>
+      <input id="leaseDown" type="number" inputmode="decimal" min="0" step="100" value="3000" />
+      <div class="muted">Upfront payment to reduce cap cost</div>
+    </div>
+  </div>
+
+  <!-- LEASE TERMS -->
+  <h3 style="color: #cbd5e1; font-size: 16px; margin: 24px 0 16px; font-weight: 700;">Lease Terms</h3>
+  <div class="grid">
+    <div class="col-3">
+      <label>Lease Term (months)</label>
+      <select id="leaseTerm">
+        <option value="24">24 months (2 years)</option>
+        <option value="36" selected>36 months (3 years)</option>
+        <option value="39">39 months (3.25 years)</option>
+        <option value="48">48 months (4 years)</option>
+      </select>
+    </div>
+    <div class="col-3">
+      <label>Residual Value (%)</label>
+      <input id="leaseResidual" type="number" inputmode="decimal" min="0" max="100" step="1" value="55" />
+      <div class="muted">What the car is worth at lease end (typically 50-60%)</div>
+    </div>
+    <div class="col-3">
+      <label>Money Factor</label>
+      <input id="leaseMoneyFactor" type="number" inputmode="decimal" min="0" max="1" step="0.00001" value="0.00125" />
+      <div class="muted">Lease interest rate (0.00125 = ~3% APR)</div>
+    </div>
+    <div class="col-3">
+      <label>Annual Mileage Allowance</label>
+      <select id="leaseMileage">
+        <option value="10000">10,000 miles/year</option>
+        <option value="12000" selected>12,000 miles/year</option>
+        <option value="15000">15,000 miles/year</option>
+        <option value="18000">18,000 miles/year</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- LEASE FEES & TAXES -->
+  <h3 style="color: #cbd5e1; font-size: 16px; margin: 24px 0 16px; font-weight: 700;">Fees & Taxes</h3>
+  <div class="grid">
+    <div class="col-3">
+      <label>Acquisition Fee ($)</label>
+      <input id="leaseAcquisitionFee" type="number" inputmode="decimal" min="0" step="50" value="595" />
+      <div class="muted">Bank/dealer fee to initiate lease (typically $395-$795)</div>
+    </div>
+    <div class="col-3">
+      <label>Disposition Fee ($)</label>
+      <input id="leaseDispositionFee" type="number" inputmode="decimal" min="0" step="50" value="395" />
+      <div class="muted">Fee to return vehicle at lease end (typically $350-$500)</div>
+    </div>
+    <div class="col-3">
+      <label>Sales Tax Rate (%)</label>
+      <input id="leaseTaxRate" type="number" inputmode="decimal" min="0" max="15" step="0.1" value="8.25" />
+      <div class="muted">Applied to monthly payment in most states</div>
+    </div>
+    <div class="col-3">
+      <label>Registration & Fees ($)</label>
+      <input id="leaseRegistration" type="number" inputmode="decimal" min="0" step="50" value="350" />
+      <div class="muted">Upfront registration, plates, documentation</div>
+    </div>
+  </div>
+
+  <!-- CALCULATE BUTTON -->
+  <button class="btn" id="calcLeaseBtn" style="margin-top: 24px;" aria-label="Calculate lease analysis">
+    🧮 Calculate Lease
+  </button>
+
+  <!-- LEASE RESULTS -->
+  <div id="leaseResults" style="display: none; margin-top: 32px;">
+    <div class="card hero-cost-card">
+      <h2>📊 Lease Cost Analysis</h2>
+      <div class="out">
+        <div class="kpi col-4" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(5, 150, 105, 0.3) 100%); border: 3px solid rgba(16, 185, 129, 0.6);">
+          <h3 style="color: #d1fae5;">💳 MONTHLY PAYMENT (w/ Tax)</h3>
+          <div class="val" id="leaseMonthlyPayment" style="color: #10b981; font-size: 42px;">$—</div>
+          <div class="sub" style="color: #a7f3d0;">Your total monthly lease payment</div>
         </div>
-        <div class="col-3">
-          <label>Make</label>
-          <select id="leaseMake">
-            <option value="">Select Make...</option>
-            <option value="Toyota">Toyota</option>
-            <option value="Honda">Honda</option>
-            <option value="Ford">Ford</option>
-            <option value="Chevrolet">Chevrolet</option>
-            <option value="BMW">BMW</option>
-            <option value="Mercedes-Benz">Mercedes-Benz</option>
-            <option value="Audi">Audi</option>
-            <option value="Lexus">Lexus</option>
-            <option value="Hyundai">Hyundai</option>
-            <option value="Kia">Kia</option>
-          </select>
+
+        <div class="kpi col-4">
+          <h3>Total Lease Cost</h3>
+          <div class="val" id="leaseTotalCost">$—</div>
+          <div class="sub">All payments + fees over lease term</div>
         </div>
-        <div class="col-3">
-          <label>Model</label>
-          <input id="leaseModel" type="text" placeholder="e.g., Accord, X5, RAV4" />
-        </div>
-        <div class="col-3">
-          <label>Segment</label>
-          <select id="leaseSegment">
-            <option value="Generic">Generic / Sedan</option>
-            <option value="SUV">SUV / Crossover</option>
-            <option value="Truck">Truck</option>
-            <option value="Luxury">Luxury</option>
-            <option value="Sports">Sports / Performance</option>
-            <option value="EV">Electric Vehicle</option>
-            <option value="Hybrid">Hybrid</option>
-          </select>
+
+        <div class="kpi col-4">
+          <h3>Cost Per Month Owned</h3>
+          <div class="val" id="leaseCostPerMonth">$—</div>
+          <div class="sub">Total cost / months owned</div>
         </div>
       </div>
 
-      <!-- LEASE PRICING -->
-      <h3 style="color: #cbd5e1; font-size: 16px; margin: 24px 0 16px; font-weight: 700;">Lease Pricing</h3>
-      <div class="grid">
-        <div class="col-4">
-          <label>MSRP (Sticker Price) ($)</label>
-          <input id="leaseMSRP" type="number" inputmode="decimal" min="0" step="100" value="45000" />
-          <div class="muted">Manufacturer suggested retail price</div>
+      <div class="out" style="margin-top: 12px;">
+        <div class="kpi col-4">
+          <h3>Base Monthly Payment</h3>
+          <div class="val" id="leaseBasePayment">$—</div>
+          <div class="sub">Before taxes</div>
         </div>
-        <div class="col-4">
-          <label>Agreed Upon Price ($)</label>
-          <input id="leaseAgreedPrice" type="number" inputmode="decimal" min="0" step="100" value="42000" />
-          <div class="muted">Negotiated selling price (capitalized cost)</div>
-        </div>
-        <div class="col-4">
-          <label>Down Payment / Cap Reduction ($)</label>
-          <input id="leaseDown" type="number" inputmode="decimal" min="0" step="100" value="3000" />
-          <div class="muted">Upfront payment to reduce cap cost</div>
-        </div>
-      </div>
 
-      <!-- LEASE TERMS -->
-      <h3 style="color: #cbd5e1; font-size: 16px; margin: 24px 0 16px; font-weight: 700;">Lease Terms</h3>
-      <div class="grid">
-        <div class="col-3">
-          <label>Lease Term (months)</label>
-          <select id="leaseTerm">
-            <option value="24">24 months (2 years)</option>
-            <option value="36" selected>36 months (3 years)</option>
-            <option value="39">39 months (3.25 years)</option>
-            <option value="48">48 months (4 years)</option>
-          </select>
+        <div class="kpi col-4">
+          <h3>Total Depreciation</h3>
+          <div class="val" id="leaseDepreciation">$—</div>
+          <div class="sub">Vehicle value loss over lease</div>
         </div>
-        <div class="col-3">
-          <label>Residual Value (%)</label>
-          <input id="leaseResidual" type="number" inputmode="decimal" min="0" max="100" step="1" value="55" />
-          <div class="muted">What the car is worth at lease end (typically 50-60%)</div>
-        </div>
-        <div class="col-3">
-          <label>Money Factor</label>
-          <input id="leaseMoneyFactor" type="number" inputmode="decimal" min="0" max="1" step="0.00001" value="0.00125" />
-          <div class="muted">Lease interest rate (0.00125 = ~3% APR)</div>
-        </div>
-        <div class="col-3">
-          <label>Annual Mileage Allowance</label>
-          <select id="leaseMileage">
-            <option value="10000">10,000 miles/year</option>
-            <option value="12000" selected>12,000 miles/year</option>
-            <option value="15000">15,000 miles/year</option>
-            <option value="18000">18,000 miles/year</option>
-          </select>
+
+        <div class="kpi col-4">
+          <h3>Total Interest Charges</h3>
+          <div class="val" id="leaseInterest">$—</div>
+          <div class="sub">Finance charges over lease term</div>
         </div>
       </div>
 
-      <!-- LEASE FEES & TAXES -->
-      <h3 style="color: #cbd5e1; font-size: 16px; margin: 24px 0 16px; font-weight: 700;">Fees & Taxes</h3>
-      <div class="grid">
-        <div class="col-3">
-          <label>Acquisition Fee ($)</label>
-          <input id="leaseAcquisitionFee" type="number" inputmode="decimal" min="0" step="50" value="595" />
-          <div class="muted">Bank/dealer fee to initiate lease (typically $395-$795)</div>
-        </div>
-        <div class="col-3">
-          <label>Disposition Fee ($)</label>
-          <input id="leaseDispositionFee" type="number" inputmode="decimal" min="0" step="50" value="395" />
-          <div class="muted">Fee to return vehicle at lease end (typically $350-$500)</div>
-        </div>
-        <div class="col-3">
-          <label>Sales Tax Rate (%)</label>
-          <input id="leaseTaxRate" type="number" inputmode="decimal" min="0" max="15" step="0.1" value="8.25" />
-          <div class="muted">Applied to monthly payment in most states</div>
-        </div>
-        <div class="col-3">
-          <label>Registration & Fees ($)</label>
-          <input id="leaseRegistration" type="number" inputmode="decimal" min="0" step="50" value="350" />
-          <div class="muted">Upfront registration, plates, documentation</div>
-        </div>
-      </div>
-
-      <!-- CALCULATE BUTTON -->
-      <button class="btn" id="calcLeaseBtn" style="margin-top: 24px;" aria-label="Calculate lease analysis">
-        🧮 Calculate Lease
-      </button>
-
-      <!-- LEASE RESULTS -->
-      <div id="leaseResults" style="display: none; margin-top: 32px;">
-        <div class="card hero-cost-card">
-          <h2>📊 Lease Cost Analysis</h2>
-          <div class="out">
-            <div class="kpi col-4" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(5, 150, 105, 0.3) 100%); border: 3px solid rgba(16, 185, 129, 0.6);">
-              <h3 style="color: #d1fae5;">💳 MONTHLY PAYMENT (w/ Tax)</h3>
-              <div class="val" id="leaseMonthlyPayment" style="color: #10b981; font-size: 42px;">$—</div>
-              <div class="sub" style="color: #a7f3d0;">Your total monthly lease payment</div>
-            </div>
-
-            <div class="kpi col-4">
-              <h3>Total Lease Cost</h3>
-              <div class="val" id="leaseTotalCost">$—</div>
-              <div class="sub">All payments + fees over lease term</div>
-            </div>
-
-            <div class="kpi col-4">
-              <h3>Cost Per Month Owned</h3>
-              <div class="val" id="leaseCostPerMonth">$—</div>
-              <div class="sub">Total cost / months owned</div>
-            </div>
-          </div>
-
-          <div class="out" style="margin-top: 12px;">
-            <div class="kpi col-4">
-              <h3>Base Monthly Payment</h3>
-              <div class="val" id="leaseBasePayment">$—</div>
-              <div class="sub">Before taxes</div>
-            </div>
-
-            <div class="kpi col-4">
-              <h3>Total Depreciation</h3>
-              <div class="val" id="leaseDepreciation">$—</div>
-              <div class="sub">Vehicle value loss over lease</div>
-            </div>
-
-            <div class="kpi col-4">
-              <h3>Total Interest Charges</h3>
-              <div class="val" id="leaseInterest">$—</div>
-              <div class="sub">Finance charges over lease term</div>
-            </div>
-          </div>
-
-          <div class="out" style="margin-top: 12px;">
-            <div class="kpi col-6">
-              <h3>Due at Signing</h3>
-              <div class="val" id="leaseDueAtSigning">$—</div>
-              <div class="sub">Down payment + first month + fees + registration</div>
-            </div>
-
-            <div class="kpi col-6">
-              <h3>Residual Value at End</h3>
-              <div class="val" id="leaseResidualValue">$—</div>
-              <div class="sub">What the car is worth when you return it</div>
-            </div>
-          </div>
+      <div class="out" style="margin-top: 12px;">
+        <div class="kpi col-6">
+          <h3>Due at Signing</h3>
+          <div class="val" id="leaseDueAtSigning">$—</div>
+          <div class="sub">Down payment + first month + fees + registration</div>
         </div>
 
-        <button class="btn-secondary" id="addLeaseToCompareBtn" style="margin-top: 20px;">
-          ➕ Add This Lease to Vehicle Comparison
-        </button>
+        <div class="kpi col-6">
+          <h3>Residual Value at End</h3>
+          <div class="val" id="leaseResidualValue">$—</div>
+          <div class="sub">What the car is worth when you return it</div>
+        </div>
       </div>
     </div>
+
+    <button class="btn-secondary" id="addLeaseToCompareBtn" style="margin-top: 20px;">
+      ➕ Add This Lease to Vehicle Comparison
+    </button>
+  </div>
+</div>
+```
+
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+
 <script>
   // ================================
   // VEHICLE DATABASE (2026 MSRP Data - 30 brands, 146 models, 475 trims)
@@ -3490,7 +3523,21 @@ const DB={
     const tradeDisc = readNumber("tradeDisc");
     const condAdj = readNumber("condAdj");
     const currentMileage = readNumber("currentMileage");
-    const mileageAtAnalysis = readNumber("mileageAtAnalysis");
+    let mileageAtAnalysis = readNumber("mileageAtAnalysis");
+    
+    // Auto-estimate projected mileage if user left it at 0
+    if (mileageAtAnalysis <= 0 || mileageAtAnalysis <= currentMileage) {
+      const segRevMap = {
+        'SEDAN_COMPACT': 'compact_car', 'SEDAN_MIDSIZE': 'midsize_car',
+        'SUV_COMPACT': 'compact_suv', 'SUV_MIDSIZE': 'midsize_suv', 'SUV_FULLSIZE': 'large_suv',
+        'TRUCK_FULLSIZE': 'fullsize_truck', 'TRUCK_MIDSIZE': 'midsize_truck',
+        'SPORTS_CAR': 'sports_car', 'SPORTS_EXOTIC': 'sports_exotic',
+        'MINIVAN': 'minivan', 'EV_MAINSTREAM': 'ev_mainstream', 'EV_PREMIUM': 'ev_premium', 'HYBRID': 'hybrid',
+      };
+      const annualMi = SEG_MI[segRevMap[segment] || 'midsize_car'] || 12000;
+      mileageAtAnalysis = currentMileage + Math.round(annualMi * xYears);
+      document.getElementById("mileageAtAnalysis").value = mileageAtAnalysis;
+    }
     const extraPmt = readNumber("extraPmt");
     const maxPeriod = readNumber("maxPeriod");
     const insurance = readNumber("insurance");
@@ -5768,5 +5815,6 @@ const DB={
   `;
   document.head.appendChild(style);
 </script>
+
 </body>
 </html>
